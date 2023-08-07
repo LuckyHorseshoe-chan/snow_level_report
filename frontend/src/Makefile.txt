@@ -5,6 +5,7 @@ build: clean prepare
 	vite build
 
 prepare: ./generated/api.ts
+	npm i @chakra-ui/react @emotion/react @emotion/styled framer-motion
 
 dev: prepare
 	vite
