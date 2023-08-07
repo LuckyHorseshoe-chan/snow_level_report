@@ -55,10 +55,13 @@
   height: 550px;
   padding: 0;
   margin: 0;
+  position: relative;
+  top: 5%;
 }
 
 .item {
   display: flex;
+  flex-direction: column;
   width: 222px;
   height: 160px;
   margin: 10px;
@@ -68,19 +71,24 @@
   font-size: 2rem;
   flex-shrink: 0;
 }
+
+.item-content{
+  position: relative;
+  width: 172px;
+  height: 160px;
+  top: 24px;
+}
+
 #create-report{
   width: 230px;
   height: 60px;
   position: relative;
-  right: 10px;
+  left: 20%;
   border-radius: 13px;
   background-color: #3A0084;
   color: white;
 }
-.centered{
-  position: absolute;
-  top: 5%
-}
+
 #plus-block{
   width: 220px;
   height: 134px;
@@ -110,6 +118,8 @@
   line-height: 15px;
   letter-spacing: 0em;
   text-align: left;
+  position: relative;
+  top: 38%;
 }
 
 .date{
@@ -120,7 +130,10 @@
   letter-spacing: 0em;
   text-align: left;
   color: #00000082;
+  position: relative;
+  top: 40%;
 }
+
 .dark {
   background: #000;
   height: 100%;
@@ -131,6 +144,7 @@
   top: 0;
   left: 0;
 }
+
 .modal {
   width: 30%;
   height: 45%;
@@ -138,14 +152,25 @@
   top: 27%;
   left: 32%;
   background: white;
+  display: flex;
+  flex-direction: column;
 }
 
+.modal-text{
+  font-family: Inter;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0em;
+  text-align: left;
+  width: 200px;
+  position: relative;
+  left: 15%;
+}
 .obj-input{
   position: relative;
-  width: 200px;
+  left: 15%;
+  width: 70%;
   height: 40px;
-  top: 5%;
-  left: 0;
   border: 1px solid #000000;
 }
 
@@ -153,7 +178,10 @@
   width: 121px;
   height: 46px;
   background: #00A524;
-  color: white
+  color: white;
+  position: relative;
+  top: 10%;
+  left: 70%;
 }
 
 #object-page{

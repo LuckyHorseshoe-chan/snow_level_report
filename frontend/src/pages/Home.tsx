@@ -17,7 +17,7 @@ function Home(){
 
     return(
         <div>
-            <div className="home-page">
+            <div id="home-page">
                 <button id="create-report" onClick={openModal}>Создать отчёт</button>
                 <ObjectList/>
             </div>
