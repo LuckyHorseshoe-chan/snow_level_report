@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChakraProvider } from '@chakra-ui/react'
 import logo from './logo.svg';
 import Home from './pages/Home';
 import Object from './pages/Object';
@@ -8,7 +9,9 @@ import './App.css';
 
 function App() {
   return (
-    <CreateReport/>
+    <ChakraProvider>
+      <CreateBatch/>
+    </ChakraProvider>
   );
 }
 
