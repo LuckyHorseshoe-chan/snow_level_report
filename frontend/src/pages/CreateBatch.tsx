@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { HStack } from '@chakra-ui/react'
 import UploadFolder from "../components/UploadFolder";
 import ImageCoordinates from "../components/ImageCoordinates";
+import Report from "../components/Report";
 import Menu from "../components/Menu";
 
 function CreateBatch(){
@@ -11,8 +13,11 @@ function CreateBatch(){
             </div>
             <div id="create-obj-content">
                 <Menu/>
-                <ImageCoordinates/>
-                <button className="report-btn"></button>
+                <Report/>
+                <HStack>
+                    <button className="report-btn"></button>
+                    <button className="report-btn"></button>
+                </HStack>
             </div>
         </div>
     )
