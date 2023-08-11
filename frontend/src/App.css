@@ -71,6 +71,9 @@
   font-size: 2rem;
   flex-shrink: 0;
 }
+.item:hover{
+  background-color: #b5b5b5;
+}
 
 .item-content{
   position: relative;

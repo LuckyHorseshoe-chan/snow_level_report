@@ -1,5 +1,6 @@
 import { HStack, VStack } from '@chakra-ui/react'
 import { useState } from 'react';
+import { Link } from 'react-router-dom'
 import Report from '../components/Report';
 import CheckboxTree from 'react-checkbox-tree';
 
@@ -29,6 +30,7 @@ function CreateReport(){
                 </div>
                 <Report/>
             </HStack>
+            <Link to="/">Назад</Link>
         </VStack>
         
     )

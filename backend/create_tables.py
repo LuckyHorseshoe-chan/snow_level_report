@@ -17,6 +17,8 @@ commands = (
         CREATE TABLE batches (
             batch_id SERIAL PRIMARY KEY,
             site_id INTEGER NOT NULL,
+            start_date DATE NOT NULL,
+            end_date DATE NOT NULL,
             createdAt TIMESTAMP,
             processedAt TIMESTAMP,
             mapping JSON,
