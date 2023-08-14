@@ -1,6 +1,5 @@
 import { useState, useEffect  } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import useSWR from "swr"
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { confirmAlert } from 'react-confirm-alert'
 import "react-confirm-alert/src/react-confirm-alert.css"
 import SiteText from "../components/SiteText";
@@ -14,6 +13,7 @@ function Site(){
     const [confirmMessage, setConfirmMessage] = useState('Уверены, что хотите удалить этот объект?')
 
     const { siteId } = useParams()
+    const navigate = useNavigate()
 
     const handleClick = (e: any) => {
         if (e.currentTarget.style.backgroundColor === "rgb(217, 217, 217)"){
@@ -32,7 +32,6 @@ function Site(){
         }
         console.log(checked)
     }
-
     const deleteBatches = () => {
         if (checked.length !== 0){
             console.log(JSON.stringify(checked))
@@ -46,6 +45,7 @@ function Site(){
             method: "DELETE",
             headers: { "Content-Type": "application/json" }
             })
+            navigate('/')
         }
         
     }
@@ -62,25 +62,12 @@ function Site(){
             },
             {
               label: 'Нет',
-              //onClick: () => alert('Click No')
             }
           ]
         });
       }
     
-    const batchesEndpoint = "http://localhost:8000/batches?site_id=" + siteId
-    const getBatches = () => {
-        fetch(batchesEndpoint, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        }).then((response) => {
-            return response.json();
-        }).then((batches_list) => {
-            setBatches(batches_list)
-        })
-    }
-
-    const { data: batches_list } = useSWR(batchesEndpoint, getBatches)
+    
     
     useEffect(() => {
         fetch("http://localhost:8000/site?site_id=" + siteId, {
@@ -91,6 +78,15 @@ function Site(){
         }).then((site) => {
             setName(site["name"])    
             setComment(site["comment"]) 
+        })
+
+        fetch("http://localhost:8000/batches?site_id=" + siteId, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        }).then((response) => {
+            return response.json();
+        }).then((batches_list) => {
+            setBatches(batches_list)
         })
     }, [])
 

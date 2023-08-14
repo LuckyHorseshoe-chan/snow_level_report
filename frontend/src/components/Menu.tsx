@@ -12,22 +12,18 @@ import {
     Box
   } from '@chakra-ui/react'
 
-const steps = [
-{ title: 'First', description: 'Contact Info' },
-{ title: 'Second', description: 'Date & Time' },
-{ title: 'Third', description: 'Select Rooms' },
-]
+function Menu({activeStep, setActiveStep} : {activeStep: any, setActiveStep: any}){
+    const steps = [
+        { title: 'Upload', onClick: () => setActiveStep(0) },
+        { title: 'Validation', onClick: () => setActiveStep(1) },
+        { title: 'Report', onClick: () => setActiveStep(2) },
+    ]
 
-function Menu(){
-    const { activeStep } = useSteps({
-        index: 1,
-        count: steps.length,
-      })
     return(
         <div id="menu">
             <Stepper index={activeStep}>
             {steps.map((step, index) => (
-                <Step key={index}>
+                <Step key={index} onClick={step.onClick}>
                 <StepIndicator>
                     <StepStatus
                     complete={<StepIcon />}
@@ -38,7 +34,6 @@ function Menu(){
 
                 <Box flexShrink='0'>
                     <StepTitle>{step.title}</StepTitle>
-                    <StepDescription>{step.description}</StepDescription>
                 </Box>
 
                 <StepSeparator />

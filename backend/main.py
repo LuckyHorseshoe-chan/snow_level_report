@@ -1,6 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
+import shutil
+import os
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Annotated
+from fastapi.responses import HTMLResponse
+
 from bd_api import *
+from image_processing import *
 
 app = FastAPI()
 
@@ -63,3 +69,12 @@ async def del_site(site_id):
 @app.delete("/batches")
 async def del_batches(batch_ids: dict):
     delete_batches(batch_ids["batch_ids"])
+
+@app.post("/upload")
+async def upload_zip(file: UploadFile):
+    path = os.getcwd() + '/temp/'
+    with open(f'{path}{file.filename}', 'wb') as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    unzip_file(f'{path}{file.filename}', path)
+    os.remove(f'{path}{file.filename}')
+    return {"filename": file.filename}

@@ -398,3 +398,7 @@ input[type=file]#img-upload::file-selector-button{
   height: 600px;
   border: 1px solid green;
 }
+
+.borderBlack {
+  border: 5px solid black;
+}

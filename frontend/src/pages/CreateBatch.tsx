@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { HStack } from '@chakra-ui/react'
+import { VStack, HStack, Button } from '@chakra-ui/react'
 import { useParams, Link } from 'react-router-dom'
 import UploadFolder from "../components/UploadFolder";
 import ImageCoordinates from "../components/ImageCoordinates";
@@ -8,17 +8,34 @@ import Menu from "../components/Menu";
 
 function CreateBatch(){
     const { siteId } = useParams()
+    const [ activeStep, setActiveStep ] = useState(0)
 
+    const ProcessingStep = ({activeStep} : {activeStep: any}) => {
+        if (activeStep == 0){
+            return (<UploadFolder setActiveStep={setActiveStep} />)
+        } else if (activeStep == 1) {
+            return (
+            <VStack>
+                <ImageCoordinates />
+                <HStack>
+                    <Button>Попробовать случайную фотографию из набора</Button>
+                    <Button onClick={() => {setActiveStep(2)}}>Обработать набор данных</Button>
+                </HStack>
+            </VStack>)
+        } else {
+            return (<Report />)
+        }
+    }
     return (
         <div id="create-obj-page">
             <div id="obj-text">
                 <p id="obj-name">Сопка/Новый набор</p>
             </div>
             <div id="create-obj-content">
-                <Menu/>
-                <UploadFolder/>
+                <Menu activeStep={activeStep} setActiveStep={setActiveStep} />
+                <ProcessingStep activeStep={activeStep} />
             </div>
-            <Link to={("/site/" + siteId)}>Назад</Link>
+            <Link to={("/site/" + siteId)}>Объект</Link>
         </div>
     )
 }

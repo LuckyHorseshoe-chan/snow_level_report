@@ -1,21 +1,34 @@
 import { useState, useEffect, useRef } from "react";
+import axios from 'axios'
 
-function UploadFolder(){
-    const ref = useRef<HTMLInputElement>(null);
+function UploadFolder({setActiveStep} : {setActiveStep: any}){
+    const [file, uploadFile] = useState<File[]>()
 
-    useEffect(() => {
-        if (ref.current !== null) {
-        ref.current.setAttribute("directory", "");
-        ref.current.setAttribute("webkitdirectory", "");
-        ref.current.setAttribute("mozdirectory", "");
+    const handleChange = (e: any) => {
+        uploadFile(e.target.files)
+    }
+
+    const handleSubmit = () => {
+        console.log("undefined")
+        if (!file){
+            return
         }
-    }, [ref]);
+        console.log(file[0].name)
+        const formdata = new FormData();
+        formdata.append(
+          "file",
+          file[0],
+        )
+        axios.post("http://localhost:8000/upload", formdata)
+        setActiveStep(1)
+          
+    }
     return(
         <div className="modal-content">
-            <p className='modal-text'>Комментарий</p>
+            <p className="modal-text">Комментарий</p>
             <input className="obj-input"></input>
-            <input type="file" ref={ref} id="img-upload" />
-            <button className="green-button">Загрузить</button>
+            <input type="file" id="img-upload" onChange={handleChange}/>
+            <button className="green-button" onClick={handleSubmit}>Загрузить</button>
         </div>
     )
 }
