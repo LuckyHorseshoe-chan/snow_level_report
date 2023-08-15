@@ -5,6 +5,7 @@ import UploadFolder from "../components/UploadFolder";
 import ImageCoordinates from "../components/ImageCoordinates";
 import Report from "../components/Report";
 import Menu from "../components/Menu";
+import background from "../img/background.png"
 
 function CreateBatch(){
     const { siteId } = useParams()
@@ -14,11 +15,20 @@ function CreateBatch(){
         if (activeStep == 0){
             return (<UploadFolder setActiveStep={setActiveStep} />)
         } else if (activeStep == 1) {
+            const loadPhoto = () => {
+                const imgDiv = document.getElementById("img-edit")
+                if (imgDiv){
+                    console.log(imgDiv.style.backgroundImage)
+                    imgDiv.style.backgroundImage = `url(${background})`
+                    console.log(imgDiv.style.backgroundImage)
+                    console.log(typeof(background))
+                }
+            }
             return (
             <VStack>
-                <ImageCoordinates />
+                <ImageCoordinates/>
                 <HStack>
-                    <Button>Попробовать случайную фотографию из набора</Button>
+                    <Button onClick={loadPhoto}>Попробовать случайную фотографию из набора</Button>
                     <Button onClick={() => {setActiveStep(2)}}>Обработать набор данных</Button>
                 </HStack>
             </VStack>)
