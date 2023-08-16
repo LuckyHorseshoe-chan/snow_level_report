@@ -337,7 +337,6 @@ input[type=file]#img-upload::file-selector-button{
   width: 93vh;
   height: 70vh;
   position: relative;
-  background-image: url("img/background.png");
   background-size: contain;
   border: 1px solid red;
 }

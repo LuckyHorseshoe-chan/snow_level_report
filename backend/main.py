@@ -1,9 +1,11 @@
-from fastapi import FastAPI, File, UploadFile
-import shutil
-import os
+from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+
+import shutil
+import os
 
 from bd_api import *
 from image_processing import *
@@ -72,9 +74,13 @@ async def del_batches(batch_ids: dict):
 
 @app.post("/upload")
 async def upload_zip(file: UploadFile):
-    path = os.getcwd() + '/temp/'
+    path = os.getcwd() + '/static/'
     with open(f'{path}{file.filename}', 'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
     unzip_file(f'{path}{file.filename}', path)
     os.remove(f'{path}{file.filename}')
     return {"filename": file.filename}
+
+@app.get("/img_path")
+async def get_random_path():
+    return {'img_url': choose_random_image()}

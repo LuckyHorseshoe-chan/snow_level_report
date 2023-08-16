@@ -5,7 +5,6 @@ import UploadFolder from "../components/UploadFolder";
 import ImageCoordinates from "../components/ImageCoordinates";
 import Report from "../components/Report";
 import Menu from "../components/Menu";
-import background from "../img/background.png"
 
 function CreateBatch(){
     const { siteId } = useParams()
@@ -17,12 +16,17 @@ function CreateBatch(){
         } else if (activeStep == 1) {
             const loadPhoto = () => {
                 const imgDiv = document.getElementById("img-edit")
-                if (imgDiv){
-                    console.log(imgDiv.style.backgroundImage)
-                    imgDiv.style.backgroundImage = `url(${background})`
-                    console.log(imgDiv.style.backgroundImage)
-                    console.log(typeof(background))
-                }
+                fetch("http://localhost:8000/img_path", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                }).then((response) => {
+                    return response.json()
+                }).then((data) => {
+                    console.log(data.img_url)
+                    if (imgDiv){
+                        imgDiv.style.backgroundImage = "url('http://localhost:8080/static/" + data.img_url + "')"
+                    }
+                })
             }
             return (
             <VStack>
