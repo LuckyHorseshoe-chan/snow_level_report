@@ -387,15 +387,21 @@ input[type=file]#img-upload::file-selector-button{
 }
 
 .report-graph{
-  width: 1075px;
-  height: 321px;
+  margin: 5px;
   border: 1px solid red;
 }
 
 .report-table{
-  width: 1075px;
-  height: 247px;
+  margin: 5px;
   border: 1px solid blue;
+}
+
+#report-container{
+  width: 70vw;
+  height: 70vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid green;
 }
 
 #file-tree{

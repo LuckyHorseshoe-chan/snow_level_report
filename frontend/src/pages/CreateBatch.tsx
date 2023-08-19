@@ -14,30 +14,9 @@ function CreateBatch(){
         if (activeStep == 0){
             return (<UploadFolder setActiveStep={setActiveStep} />)
         } else if (activeStep == 1) {
-            const loadPhoto = () => {
-                const imgDiv = document.getElementById("img-edit")
-                fetch("http://localhost:8000/img_path", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                }).then((response) => {
-                    return response.json()
-                }).then((data) => {
-                    console.log(data.img_url)
-                    if (imgDiv){
-                        imgDiv.style.backgroundImage = "url('http://localhost:8080/static/" + data.img_url + "')"
-                    }
-                })
-            }
-            return (
-            <VStack>
-                <ImageCoordinates/>
-                <HStack>
-                    <Button onClick={loadPhoto}>Попробовать случайную фотографию из набора</Button>
-                    <Button onClick={() => {setActiveStep(2)}}>Обработать набор данных</Button>
-                </HStack>
-            </VStack>)
+            return (<ImageCoordinates setActiveStep={setActiveStep}/>)
         } else {
-            return (<Report />)
+            return (<Report setActiveStep={setActiveStep} />)
         }
     }
     return (

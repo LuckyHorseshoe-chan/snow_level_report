@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom'
 import Report from '../components/Report';
 import CheckboxTree from 'react-checkbox-tree';
+import ReportContainer from '../components/ReportContainer';
 
 const nodes = [{
     value: 'mars',
@@ -28,7 +29,7 @@ function CreateReport(){
                         onExpand={(expanded) => setExpanded(expanded)}
                     />
                 </div>
-                <Report/>
+                <ReportContainer data={""}/>
             </HStack>
             <Link to="/">Назад</Link>
         </VStack>

@@ -37,14 +37,23 @@ async def create_site(site: dict):
     return site
 
 @app.post("/batch")
-async def create_batch(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment):
-    insert_batch(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment)
+async def create_batch(batch: dict):
+    insert_batch(batch["site_id"], batch["start_date"], batch["end_date"], batch["createdAt"], \
+                batch["processedAt"], batch["mapping"], batch["status"], batch["comment"])
     return {"site_id": site_id}
 
+@app.put("/batch/status")
+async def put_batch_status(status):
+    update_batch_status(status)
+
+@app.put("/batch/dates")
+async def put_batch_dates(dates: dict):
+    update_batch_dates(dates["batch_id"], dates["start_date"], dates["end_date"], dates["processed_at"])
+
 @app.post("/data_points")
-async def create_data_points(batch_id, data):
-    insert_data_points(batch_id, data)
-    return {"batch_id": batch_id, "data": data}
+async def create_data_points(data_points: dict):
+    insert_data_points(data_points["batch_id"], data_points["data"])
+    return {"batch_id": data_points["batch_id"], "data": data_points["data"]}
 
 @app.get("/site")
 async def site(site_id):
@@ -84,3 +93,11 @@ async def upload_zip(file: UploadFile):
 @app.get("/img_path")
 async def get_random_path():
     return {'img_url': choose_random_image()}
+
+@app.post("/text")
+async def get_text(coordinates: dict):
+    return recognize_text(coordinates)
+
+@app.post("/ruler_height")
+async def get_ruler_height(coordinates: dict):
+    return {"snow_height": calculate_ruler_height(coordinates)}

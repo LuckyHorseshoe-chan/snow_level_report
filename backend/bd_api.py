@@ -13,7 +13,8 @@ def insert_site(name, comment):
 def insert_batch(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
-    sql = "INSERT INTO batches(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO batches(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment) \
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
     cur.execute(sql, (site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment))
     cur.close()
     conn.commit()
@@ -92,6 +93,24 @@ def get_batches(site_id):
     conn.commit()
     conn.close()
     return batches
+
+def update_batch_status(status):
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
+    cur = conn.cursor()
+    sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = %s"
+    cur.execute(sql, (start_date, end_date, processed_at, batch_id))
+    cur.close()
+    conn.commit()
+    conn.close()
+
+def update_batch_dates(batch_id, start_date, end_date, processed_at):
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
+    cur = conn.cursor()
+    sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = %s"
+    cur.execute(sql, (start_date, end_date, processed_at, batch_id))
+    cur.close()
+    conn.commit()
+    conn.close()
 
 def get_all_data():
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
