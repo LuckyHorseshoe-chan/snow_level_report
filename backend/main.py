@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 import json
+import subprocess
 
 import shutil
 import os
@@ -12,6 +13,8 @@ from bd_api import *
 from image_processing import *
 
 app = FastAPI()
+
+subprocesses = []
 
 origins = [
     "http://localhost:3000",
@@ -111,6 +114,10 @@ async def get_text(coordinates: dict):
 async def get_ruler_height(coordinates: dict):
     return {"snow_height": calculate_ruler_height(coordinates)}
 
+def run_worker(coordinates):
+    create_task.delay(1)
+    #subprocesses.append(subprocess.Popen(['C:\\Users\\Anna\\Desktop\\GitHub\\snow_level_report\\backend\\venv\\Scripts\\python', 'image_processing.py', json.dumps(coordinates)]))
+
 @app.post("/images")
 async def process_batch(coordinates: dict):
     path = os.getcwd() + '/static/'
@@ -118,5 +125,4 @@ async def process_batch(coordinates: dict):
     files = os.listdir(f'{path}{folder}')
     for i in range(len(files)):
         coordinates["img_path"] = f'{folder}/{files[i]}'
-        #process_dataset.delay(coordinates)
-        process_dataset(coordinates)
+        run_worker(coordinates)

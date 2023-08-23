@@ -7,15 +7,15 @@ import pytesseract
 import numpy as np
 import pandas as pd
 import ultralytics
+import sys
+import json
+import time
+from celery import Celery
 #from roboflow import Roboflow
 from ultralytics import YOLO
-from celery import Celery
-from sqlalchemy import create_engine
 from bd_api import *
 
-#engine = create_engine('postgresql+psycopg2://lucky:12345@localhost/celery_db')
-celery = Celery(broker='redis://localhost:6379/0')
-#celery.conf.broker_url = 'redis://localhost:6379/0'
+celery_app = Celery('image_processing', broker='redis://localhost:6379/0')
 
 def unzip_file(path_to_zip_file, directory_to_extract_to):
     with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
@@ -82,12 +82,15 @@ def calculate_ruler_height(coordinates):
         return -1
     ind = 0
     for result in results:
-        if int(result.boxes.xyxy[0][3]) > ind:
-            ind = int(result.boxes.xyxy[0][3])
+        try:
+            if int(result.boxes.xyxy[0][3]) > ind:
+                ind = int(result.boxes.xyxy[0][3])
+        except:
+            return -999
     pix_snow_height = coordinates["rightBottom"][1] - ind
     return pix_snow_height * float(coordinates["rulerHeight"]) / pix_ruler_height
 
-#@celery.task(name="process_dataset")
+@celery_app.task(name="process_dataset")
 def process_dataset(coordinates):
     result = recognize_text(coordinates)
     result["ruler"] = calculate_ruler_height(coordinates)
@@ -99,7 +102,10 @@ def process_dataset(coordinates):
     insert_data_point(coordinates["batchId"], result)
     return result
 
-@celery.task(name="create_task")
+@celery_app.task(name="create_task")
 def create_task(task_type):
     time.sleep(int(task_type) * 10)
     return True
+
+#if __name__ == '__main__':
+    #process_dataset(json.loads(sys.argv[1]))
