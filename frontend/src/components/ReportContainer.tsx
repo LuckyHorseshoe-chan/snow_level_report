@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { 
     Line, 
     CartesianGrid, 
@@ -17,81 +18,190 @@ import {
     Td,
     TableCaption,
     TableContainer,
-    Box
+    Box,
+    Select,
+    HStack,
+    VStack
   } from '@chakra-ui/react'
 
 function ReportContainer({data}: {data: any}){
+    const [minInd, setMinInd] = useState(0)
+    const [maxInd, setMaxInd] = useState(data.length)
+    const [dataSlice, setDataSlice] = useState(data)
+    const [reportType, setReportType] = useState<string>('daily')
+
+    useEffect(() => {
+        setDataSlice(data.slice(minInd, maxInd))
+    }, [minInd, maxInd])
+
+    const selectMinDate = (e: any) => {
+        console.log(e.target.value)
+        setMinInd(Number(e.target.value))
+    }
+
+    const selectMaxDate = (e: any) => {
+        console.log(e.target.value)
+        console.log(data)
+        setMaxInd(Number(e.target.value)+1)
+    }
+
+    const selectReportType = (e: any) => {
+        setReportType(e.target.value)
+        if (e.target.value == 'daily'){
+            setDataSlice(data.slice(minInd, maxInd))
+        } else{
+            setDataSlice(monthlyReport(data.slice(minInd, maxInd)))
+        }
+    }
+
+    const average = (arr: any) => {
+        return arr.reduce( ( p: number, c: number) => p + c, 0 ) / arr.length
+    }
+    const monthlyReport = (report: any) => {
+        if (!report) return []
+        let newReport : any = []
+        let years : any = []
+        let reportDict : any = {}
+        for (let i = 0; i < report.length; i++){
+            let month = report[i].datetime.slice(5, 7)
+            let year = report[i].datetime.slice(0, 4)
+            if (years.includes(year)){
+                if(reportDict[year].months.includes(month)){
+                    reportDict[year].monthData[month].temp.push(report[i].temp)
+                    if (report[i].ruler === -999){
+                        continue
+                    }
+                    reportDict[year].monthData[month].ruler.push(report[i].ruler)
+                    if (report[i].ruler > reportDict[year].monthData[month].maxSnow){
+                        reportDict[year].monthData[month].maxSnow = report[i].ruler
+                        reportDict[year].monthData[month].maxSnowDate = report[i].datetime
+                    }
+                    if (report[i].ruler < reportDict[year].monthData[month].minSnow){
+                        reportDict[year].monthData[month].minSnow = report[i].ruler
+                        reportDict[year].monthData[month].minSnowDate = report[i].datetime
+                    }
+                } else{
+                    reportDict[year].months.push(month)
+                    if (report[i].ruler !== -999) reportDict[year].monthData[month] = {temp: [report[i].temp], ruler: [report[i].ruler], 
+                        maxSnow: report[i].ruler, minSnow: report[i].ruler, 
+                        maxSnowDate: report[i].datetime, minSnowDate: report[i].datetime}
+                    else reportDict[year].monthData[month] = {temp: [report[i].temp], ruler: [], 
+                        maxSnow: -999, minSnow: 999, 
+                        maxSnowDate: report[i].datetime, minSnowDate: report[i].datetime}
+                }
+            } else {
+                years.push(year)
+                reportDict[year] = {months: [month], monthData: {}}
+                reportDict[year].monthData[month] = {temp: [report[i].temp], ruler: [report[i].ruler], maxSnow: report[i].ruler, 
+                    minSnow: report[i].ruler, maxSnowDate: report[i].datetime, minSnowDate: report[i].datetime}
+            }
+        }
+        console.log(data)
+        console.log(reportDict)
+        for (let i = 0; i < years.length; i++){
+            let months = reportDict[years[i]].months
+            for (let j = 0; j < months.length; j++) {
+                let monthData = reportDict[years[i]].monthData[months[j]]
+                newReport.push({datetime: years[i] + '-' + months[j],
+                                name: data[0].name,
+                                ruler: average(monthData.ruler),
+                                temp: average(monthData.temp),
+                                maxSnow: monthData.maxSnow,
+                                maxSnowDate: monthData.maxSnowDate,
+                                minSnow: monthData.minSnow,
+                                minSnowDate: monthData.minSnowDate 
+                })
+            }
+        }
+        return newReport
+    }
+
     return (
-        <div id="report-container">
-                <div className="report-graph">
-                    <ResponsiveContainer>
-                        <ComposedChart data={data}>
-                            <Line yAxisId="left" type="monotone" dataKey="temp" stroke="#8884d8" />
-                            <Line yAxisId="right" type="monotone" dataKey="snow" stroke="#82ca9d"/>
-                            <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                            <XAxis dataKey="name" />
-                            <YAxis yAxisId="left" />
-                            <YAxis yAxisId="right" orientation="right" />
-                            <Tooltip />
-                        </ComposedChart >
-                    </ResponsiveContainer>
-                </div>
-                <div className="report-table">
-                    <Box overflowY="auto" maxHeight="30vh">
-                        <TableContainer>
-                            <Table variant='simple' colorScheme="teal">
-                                <TableCaption>Imperial to metric conversion factors</TableCaption>
-                                    <Thead bgColor="grey">
+        <VStack>
+            <HStack>
+                <Select size='xs' defaultValue='daily' onChange={selectReportType}>
+                    <option value='daily'>По дням</option>
+                    <option value='monthly'>По периодам</option>
+                </Select>
+                <Select size='xs' defaultValue="0" onChange={selectMinDate}>
+                    {data.map((row: any, i: any) => (
+                        row ? <option value={i}>{row.datetime}</option> : <div></div>
+                    ))}
+                </Select>
+                <Select size='xs' defaultValue='0' onChange={selectMaxDate}>
+                    {data.map((row: any, i: any) => (
+                        row ? <option value={i}>{row.datetime}</option> : <div></div>
+                    ))}
+                </Select>
+            </HStack>
+            <div id="report-container">
+                <ResponsiveContainer>
+                    <ComposedChart data={dataSlice}>
+                        <Line yAxisId="left" type="monotone" dataKey="temp" stroke="#8884d8" />
+                        <Line yAxisId="right" type="monotone" dataKey="ruler" stroke="#82ca9d"/>
+                        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                        <XAxis dataKey="datetime" />
+                        <YAxis yAxisId="left" />
+                        <YAxis yAxisId="right" orientation="right" />
+                        <Tooltip />
+                    </ComposedChart >
+                </ResponsiveContainer>
+                <Box overflowY="auto" maxHeight="30vh">
+                    <TableContainer>
+                        <Table variant='simple' colorScheme="teal">
+                            <Thead bgColor="grey">
+                                    {reportType === 'daily' ?
                                         <Tr>
-                                            <Th>To convert</Th>
-                                            <Th>into</Th>
-                                            <Th isNumeric>multiply by</Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
+                                            <Th>Gauge-Name</Th>
+                                            <Th>Date</Th>
+                                            <Th isNumeric>Snow depth, cm</Th>
+                                            <Th isNumeric>Temperature, ℃</Th>
+                                        </Tr> :
                                         <Tr>
-                                            <Td>inches</Td>
-                                            <Td>millimetres (mm)</Td>
-                                            <Td isNumeric>25.4</Td>
+                                            <Th>Gauge-Name</Th>
+                                            <Th isNumeric>Month</Th>
+                                            <Th isNumeric>Year</Th>
+                                            <Th isNumeric>Average snow depth, cm</Th>
+                                            <Th isNumeric>Average temperature, ℃</Th>
+                                            <Th isNumeric>Maximum snow depth, cm</Th>
+                                            <Th>Date of maximum snow depth</Th>
+                                            <Th isNumeric>Minimum snow depth, cm</Th>
+                                            <Th>Date of minimum snow depth</Th>
                                         </Tr>
+                                    }
+                            </Thead>
+                            {reportType === 'daily' ? 
+                                <Tbody>
+                                    {dataSlice.map((row: any) => (
                                         <Tr>
-                                            <Td>feet</Td>
-                                            <Td>centimetres (cm)</Td>
-                                            <Td isNumeric>30.48</Td>
+                                            <Th>{row.name}</Th>
+                                            <Th>{row.datetime}</Th>
+                                            <Th isNumeric>{row.ruler}</Th>
+                                            <Th isNumeric>{row.temp}</Th>
                                         </Tr>
+                                    ))}
+                                </Tbody>:
+                                <Tbody>
+                                    {dataSlice.map((row: any) => (
                                         <Tr>
-                                            <Td>yards</Td>
-                                            <Td>metres (m)</Td>
-                                            <Td isNumeric>0.91444</Td>
+                                            <Th>{row.name}</Th>
+                                            <Th isNumeric>{row.datetime.slice(5, 7)}</Th>
+                                            <Th isNumeric>{row.datetime.slice(0, 4)}</Th>
+                                            <Th isNumeric>{row.ruler}</Th>
+                                            <Th isNumeric>{row.temp}</Th>
+                                            <Th isNumeric>{row.maxSnow}</Th>
+                                            <Th>{row.maxSnowDate}</Th>
+                                            <Th isNumeric>{row.minSnow}</Th>
+                                            <Th>{row.minSnowDate}</Th>
                                         </Tr>
-                                        <Tr>
-                                            <Td>inches</Td>
-                                            <Td>millimetres (mm)</Td>
-                                            <Td isNumeric>25.4</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>feet</Td>
-                                            <Td>centimetres (cm)</Td>
-                                            <Td isNumeric>30.48</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>yards</Td>
-                                            <Td>metres (m)</Td>
-                                            <Td isNumeric>0.91444</Td>
-                                        </Tr>
-                                    </Tbody>
-                                    <Tfoot>
-                                    <Tr>
-                                        <Th>To convert</Th>
-                                        <Th>into</Th>
-                                        <Th isNumeric>multiply by</Th>
-                                    </Tr>
-                                    </Tfoot>
-                            </Table>
-                        </TableContainer>
-                    </Box>
-                </div>
+                                    ))}
+                                </Tbody> 
+                            }
+                        </Table>
+                    </TableContainer>
+                </Box>
             </div>
+        </VStack>
     )
 }
 export default ReportContainer;

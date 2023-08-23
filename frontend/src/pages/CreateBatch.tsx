@@ -16,7 +16,7 @@ function CreateBatch(){
         } else if (activeStep == 1) {
             return (<ImageCoordinates setActiveStep={setActiveStep}/>)
         } else {
-            return (<Report setActiveStep={setActiveStep} />)
+            return (<Report activeStep={activeStep} setActiveStep={setActiveStep} />)
         }
     }
     return (

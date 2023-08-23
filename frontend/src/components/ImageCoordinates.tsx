@@ -1,10 +1,11 @@
 import { Button, HStack, VStack } from '@chakra-ui/react'
 import {useEffect, useState} from 'react'
+import { useParams } from 'react-router-dom'
 import Konva from 'konva'
 
 function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     const [imgSize, setImgSize] = useState({width: 0, height: 0})
-    const [info, setInfo] = useState({type: '', date: '', time: '', temperature: ''})
+    const [info, setInfo] = useState({type: '', datetime: '', temp: ''})
     const [snowHeight, setSnowHeight] = useState(0)
     const [ruler, setRuler] = useState({topLeft: {x: 0, y: 0}, rightBottom: {x: 0, y: 0}})
     const [type, setType] = useState({topLeft: {x: 0, y: 0}, rightBottom: {x: 0, y: 0}})
@@ -12,6 +13,8 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     const [temp, setTemp] = useState({topLeft: {x: 0, y: 0}, rightBottom: {x: 0, y: 0}})
     const [imgPath, setImgPath] = useState("")
     const [rulerHeight, setRulerHeight] = useState(0)
+    //const [batchId, setBatchId] = useState(0)
+    const { siteId } = useParams()
 
     const [isType, setIsType] = useState(true)
     const [isTemp, setIsTemp] = useState(true)
@@ -187,7 +190,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
             "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
             "type": [calculateX(type.topLeft.x), calculateX(type.rightBottom.x)],
             "datetime": [calculateX(date.topLeft.x), calculateX(date.rightBottom.x)],
-            "temperature": [calculateX(temp.topLeft.x), calculateX(temp.rightBottom.x)]
+            "temp": [calculateX(temp.topLeft.x), calculateX(temp.rightBottom.x)]
         }
         console.log(textCoordinates)
         console.log(textCoordinates)
@@ -198,7 +201,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
         }).then((response) => {
             return response.json()
         }).then((data) => {
-            setInfo({type: data['type'], date: data['date'] , time: data['time'], temperature: data['temperature']})
+            setInfo({type: data['type'], datetime: data['datetime'], temp: data['temp']})
         })
 
         const rulerCoordinates = {
@@ -233,6 +236,69 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
 
     const calculateY = (y: number) => {
         return y * ori_height / imgSize.height
+    }
+
+    const processDataset = (e: any) => {
+        const mapping = [
+            {"id": "ruler", "type": "centimeters", "heightCm": rulerHeight,
+            "pos": [calculateX(ruler.topLeft.x).toPrecision(prec), calculateY(ruler.topLeft.y).toPrecision(prec), 
+                calculateX(ruler.rightBottom.x).toPrecision(prec), calculateY(ruler.rightBottom.y).toPrecision(prec)]},
+            {"id": "datetime", "type": "timestamp", 
+            "pos": [calculateX(date.topLeft.x).toPrecision(prec), calculateY(date.topLeft.y).toPrecision(prec), 
+                calculateX(date.rightBottom.x).toPrecision(prec), calculateY(date.rightBottom.y).toPrecision(prec)]},
+        ]
+        if (isTemp){
+            mapping.push({"id": "temp", "type": "celsius", 
+            "pos": [calculateX(temp.topLeft.x).toPrecision(prec), calculateY(temp.topLeft.y).toPrecision(prec), 
+                calculateX(temp.rightBottom.x).toPrecision(prec), calculateY(temp.rightBottom.y).toPrecision(prec)]})
+        }
+        if (isType){
+            mapping.push({"id": "type", "type": "str", 
+            "pos": [calculateX(type.topLeft.x).toPrecision(prec), calculateY(type.topLeft.y).toPrecision(prec), 
+                calculateX(type.rightBottom.x).toPrecision(prec), calculateY(type.rightBottom.y).toPrecision(prec)]})
+        }
+        fetch("http://localhost:8000/batches?site_id=" + siteId, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        }).then((response) => {
+            return response.json();
+        }).then((batches_list) => {
+            //return batches_list[batches_list.length-1][0]
+            return 38
+        }).then((batchId) => {
+            const mapping_dict = {
+                "mapping": mapping,
+                "batch_id": batchId
+            }
+            //console.log(JSON.stringify(mapping_dict))
+            fetch("http://localhost:8000/batch/mapping", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(mapping_dict)
+            })
+            return batchId
+        }).then((batchId) => {
+            const coordinates = {
+                "batchId": batchId,
+                "topLeft": [calculateX(ruler.topLeft.x), calculateY(ruler.topLeft.y)],
+                "rightBottom": [calculateX(ruler.rightBottom.x), calculateY(ruler.rightBottom.y)],
+                "rulerHeight": rulerHeight,
+                "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
+                "type": [calculateX(type.topLeft.x), calculateX(type.rightBottom.x)],
+                "datetime": [calculateX(date.topLeft.x), calculateX(date.rightBottom.x)],
+                "temp": [calculateX(temp.topLeft.x), calculateX(temp.rightBottom.x)]
+            }
+            console.log(coordinates)
+            setActiveStep(2)
+            fetch("http://localhost:8000/images", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(coordinates)
+            }).then((batch) => {
+                console.log(batch.json())
+                setActiveStep(3)
+            })
+        })
     }
 
     return (
@@ -280,7 +346,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                     <p className='img-text'>
                         Нижний правый угол: ({calculateX(date.rightBottom.x).toPrecision(prec)}, {calculateY(date.rightBottom.y).toPrecision(prec)})
                     </p>
-                    <p className='img-text'>Распознанное значение: {info.date} {info.time}</p>
+                    <p className='img-text'>Распознанное значение: {info.datetime}</p>
                 </div>
                 <div className="rect-info" id="rect-temp">
                     <p className='img-text'>Температура</p>
@@ -292,7 +358,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                         <p className='img-text'>
                             Нижний правый угол: ({calculateX(temp.rightBottom.x).toPrecision(prec)}, {(temp.rightBottom.y).toPrecision(prec)})
                         </p>
-                        <p className='img-text'>Распознанное значение: {info.temperature}</p>
+                        <p className='img-text'>Распознанное значение: {info.temp}</p>
                     </div> :
                     <p className='img-text'>Отсутствует</p>
                     }
@@ -308,7 +374,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
             <HStack>
                 <Button onClick={loadPhoto}>Попробовать случайную фотографию из набора</Button>
                 <Button onClick={recognizeData}>Распознать</Button>
-                <Button onClick={() => {setActiveStep(2)}}>Обработать набор данных</Button>
+                <Button onClick={processDataset}>Обработать набор данных</Button>
             </HStack>
         </VStack>
     )

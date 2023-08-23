@@ -400,7 +400,7 @@ input[type=file]#img-upload::file-selector-button{
   width: 70vw;
   height: 70vh;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-rows: 40vh 40vh;
   border: 1px solid green;
 }
 

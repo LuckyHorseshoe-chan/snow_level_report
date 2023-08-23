@@ -3,16 +3,17 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom'
 import Report from '../components/Report';
 import CheckboxTree from 'react-checkbox-tree';
+import 'react-checkbox-tree/lib/react-checkbox-tree.css'
 import ReportContainer from '../components/ReportContainer';
 
 const nodes = [{
     value: 'mars',
     label: 'Mars',
     children: [
-        { value: 'phobos', label: 'Phobos' },
-        { value: 'deimos', label: 'Deimos' },
+      { key: 1, value: 'phobos', label: 'Phobos' },
+      { key: 2, value: 'deimos', label: 'Deimos' },
     ],
-}];
+  }]
 
 function CreateReport(){
     const [checked, setChecked] = useState<string[]>([]);
@@ -29,7 +30,6 @@ function CreateReport(){
                         onExpand={(expanded) => setExpanded(expanded)}
                     />
                 </div>
-                <ReportContainer data={""}/>
             </HStack>
             <Link to="/">Назад</Link>
         </VStack>

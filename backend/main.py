@@ -1,8 +1,9 @@
-from fastapi import FastAPI, File, UploadFile, Request
+from fastapi import FastAPI, File, UploadFile, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+import json
 
 import shutil
 import os
@@ -40,7 +41,6 @@ async def create_site(site: dict):
 async def create_batch(batch: dict):
     insert_batch(batch["site_id"], batch["start_date"], batch["end_date"], batch["createdAt"], \
                 batch["processedAt"], batch["mapping"], batch["status"], batch["comment"])
-    return {"site_id": site_id}
 
 @app.put("/batch/status")
 async def put_batch_status(status):
@@ -50,10 +50,15 @@ async def put_batch_status(status):
 async def put_batch_dates(dates: dict):
     update_batch_dates(dates["batch_id"], dates["start_date"], dates["end_date"], dates["processed_at"])
 
-@app.post("/data_points")
-async def create_data_points(data_points: dict):
-    insert_data_points(data_points["batch_id"], data_points["data"])
-    return {"batch_id": data_points["batch_id"], "data": data_points["data"]}
+@app.put("/batch/mapping")
+async def put_batch_mapping(mapping: dict):
+    update_batch_mapping(mapping["mapping"], mapping["batch_id"])
+    return {"map": json.dumps(mapping["mapping"])}
+
+@app.post("/data_point")
+async def create_data_point(data_point: dict):
+    insert_data_point(data_point["batchId"], data_point["data"])
+    return {"batch_id": data_point["batchId"], "data": data_point["data"]}
 
 @app.get("/site")
 async def site(site_id):
@@ -72,6 +77,10 @@ async def batch(batch_id):
 @app.get("/batches")
 async def batches(site_id):
     return get_batches(site_id)
+
+@app.get("/data_points")
+async def data_points(batch_id):
+    return get_data_points(batch_id)
 
 @app.delete("/site")
 async def del_site(site_id):
@@ -101,3 +110,13 @@ async def get_text(coordinates: dict):
 @app.post("/ruler_height")
 async def get_ruler_height(coordinates: dict):
     return {"snow_height": calculate_ruler_height(coordinates)}
+
+@app.post("/images")
+async def process_batch(coordinates: dict):
+    path = os.getcwd() + '/static/'
+    folder = os.listdir(path)[0]
+    files = os.listdir(f'{path}{folder}')
+    for i in range(len(files)):
+        coordinates["img_path"] = f'{folder}/{files[i]}'
+        #process_dataset.delay(coordinates)
+        process_dataset(coordinates)

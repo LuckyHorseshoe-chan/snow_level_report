@@ -20,12 +20,12 @@ def insert_batch(site_id, start_date, end_date, createdAt, processedAt, mapping,
     conn.commit()
     conn.close()
 
-def insert_data_points(batch_id, data):
+def insert_data_point(batch_id, data):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "INSERT INTO data_points(batch_id, data) VALUES (%s, %s)"
-    batches = [(batch_id, json.dumps(el)) for el in json.loads(data)]
-    cur.executemany(sql, (batches))
+    #batches = [(batch_id, json.dumps(el)) for el in json.loads(data)]
+    cur.execute(sql, (batch_id, json.dumps(data)))
     cur.close()
     conn.commit()
     conn.close()
@@ -94,6 +94,17 @@ def get_batches(site_id):
     conn.close()
     return batches
 
+def get_data_points(batch_id):
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
+    cur = conn.cursor()
+    sql = "SELECT * FROM data_points WHERE batch_id = %s"
+    cur.execute(sql, (batch_id,))
+    data_points = cur.fetchall()
+    cur.close()
+    conn.commit()
+    conn.close()
+    return data_points
+
 def update_batch_status(status):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
@@ -108,6 +119,15 @@ def update_batch_dates(batch_id, start_date, end_date, processed_at):
     cur = conn.cursor()
     sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = %s"
     cur.execute(sql, (start_date, end_date, processed_at, batch_id))
+    cur.close()
+    conn.commit()
+    conn.close()
+
+def update_batch_mapping(mapping, batch_id):
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
+    cur = conn.cursor()
+    sql = "UPDATE batches SET mapping = %s WHERE batch_id = %s"
+    cur.execute(sql, (json.dumps(mapping), batch_id))
     cur.close()
     conn.commit()
     conn.close()
