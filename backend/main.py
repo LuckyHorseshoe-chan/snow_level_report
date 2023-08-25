@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 import json
 import subprocess
+from celery.result import AsyncResult
 
 import shutil
 import os
@@ -74,8 +75,8 @@ async def sites():
 
 @app.get("/batch")
 async def batch(batch_id):
-    _, site_id, createdAt, processedAt, mapping, status, comment  = get_batch(batch_id)
-    return {"batch_id": batch_id, "site_id": site_id, "createdAt": createdAt, "processedAt": processedAt, "mapping": mapping, "status": status, "comment": comment}
+    #_, site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment  = get_batch(batch_id)
+    return get_batch(batch_id)
 
 @app.get("/batches")
 async def batches(site_id):
@@ -114,15 +115,36 @@ async def get_text(coordinates: dict):
 async def get_ruler_height(coordinates: dict):
     return {"snow_height": calculate_ruler_height(coordinates)}
 
+tasks = []
+
 def run_worker(coordinates):
-    create_task.delay(1)
+    task = process_dataset.delay(coordinates)
+    tasks.append(task.id)
     #subprocesses.append(subprocess.Popen(['C:\\Users\\Anna\\Desktop\\GitHub\\snow_level_report\\backend\\venv\\Scripts\\python', 'image_processing.py', json.dumps(coordinates)]))
 
 @app.post("/images")
 async def process_batch(coordinates: dict):
+    keys = coordinates.keys()
+    if ("batchId" not in keys or "strip_size" not in keys or "mapping" not in keys \
+    or not coordinates["mapping"] or not coordinates["batchId"] or not coordinates["strip_size"]):
+        return {"status": "fail"}
     path = os.getcwd() + '/static/'
     folder = os.listdir(path)[0]
     files = os.listdir(f'{path}{folder}')
-    for i in range(len(files)):
+    tasks = []
+    for i in range(10):
         coordinates["img_path"] = f'{folder}/{files[i]}'
         run_worker(coordinates)
+    #coordinates["img_path"] = f'{folder}/{files[0]}'
+    #run_worker(coordinates)
+    return {"status": "ok"}
+
+@app.get("/tasks_status")
+async def get_tasks():
+    new_tasks = []
+    for task in tasks:
+        if not AsyncResult(task).ready():
+            new_tasks.append(task)
+    if (len(new_tasks)):
+        return {"status": "pending"}
+    return {"status": "success"}

@@ -8,15 +8,9 @@ import {
 import ReportContainer from "./ReportContainer";
 
 function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: any}){
-    const [isLoading, setIsLoading] = useState(false)
     const [data, setData] = useState<any>([])
     const [graph, setGraph] = useState(0)
     const { siteId } = useParams()
-
-    useEffect(() => {
-        //isLoading ? setActiveStep(2) : setActiveStep(3)
-        //activeStep == 2 ? setIsLoading(true) : setIsLoading(false)
-    }, [activeStep])
 
     useEffect(() => {
         fetch("http://localhost:8000/batches?site_id=" + siteId, {
@@ -25,12 +19,15 @@ function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: a
         }).then((response) => {
             return response.json();
         }).then((batches_list) => {
-            console.log(batches_list)
-            //return batches_list[batches_list.length-1][0]
-            return 38
+            let ind = -1;
+            for (let i = 0; i < batches_list.length; i++){
+                if (batches_list[i][0] > ind){
+                    ind = batches_list[i][0]
+                }
+            }
+            console.log(ind)
+            return ind
         }).then((batchId) => {
-            //const timer = setInterval(() => {
-        
             fetch("http://localhost:8000/data_points?batch_id=" + batchId, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
@@ -59,11 +56,18 @@ function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: a
                     }))
                 })
                 console.log(data)
+            }).then(() => {
+                fetch("http://localhost:8000/tasks_status", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                }).then((response) => {
+                    return response.json()
+                }).then((status) => {
+                    if (status["status"] == "success"){
+                        setActiveStep(3)
+                    }
+                })
             })
-            return
-
-            //}, 10000)
-            //return () => clearInterval(timer);
         }) 
     }, [graph])
 
@@ -94,7 +98,7 @@ function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: a
     return (
         <VStack>
             <ReportContainer data={data}/>
-            {isLoading ? 
+            {activeStep == 2 ? 
             <Button isLoading loadingText="Обработка данных"/> :
             <HStack>
                 <Button onClick={downloadMistakes}>Скачать ошибки</Button>

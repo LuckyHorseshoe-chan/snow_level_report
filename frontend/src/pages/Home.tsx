@@ -1,4 +1,4 @@
-import { VStack, Button } from '@chakra-ui/react'
+import { VStack, Button, Box } from '@chakra-ui/react'
 import { useState } from 'react';
 import { Link } from 'react-router-dom'
 import Modal from 'react-modal';
@@ -17,17 +17,15 @@ function Home(){
     };
 
     return(
-        <div>
-            <div id="home-page">
-                <Link to="/create_report">
-                    <button id="create-report">Создать отчёт</button>
-                </Link>
-                <SiteList openModal={openModal}/>
-            </div>
+        <VStack>
+            <Link to="/create_report">
+                <button id="create-report">Создать отчёт</button>
+            </Link>
+            <SiteList openModal={openModal}/>
             <Modal isOpen={modalIsOpen} onRequestClose={closeModal} className='modal'>
                 <CreateSite closeModal={closeModal}/>
             </Modal>
-        </div>
+        </VStack>
     );
 }
 export default Home;

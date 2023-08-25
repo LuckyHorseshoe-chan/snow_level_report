@@ -1,3 +1,4 @@
+import { VStack, Button, Box } from '@chakra-ui/react'
 import { useState, useEffect  } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { confirmAlert } from 'react-confirm-alert'
@@ -91,7 +92,7 @@ function Site(){
     }, [])
 
     return(
-        <div id="object-page">
+        <VStack>
             <div id="obj-header">
                 <div id="obj-text">
                     <div id="obj-name">
@@ -102,8 +103,6 @@ function Site(){
                     </div>
                 </div>
                 <div id="obj-btns">
-                    <button className="obj-btn" id="blue-btn">Использовать в отчёте</button>
-                    <button className="obj-btn" id="grey-btn">Изменить</button>
                     <button className="obj-btn" id="red-btn" onClick={submit}>Удалить</button>
                 </div>
             </div>
@@ -118,7 +117,7 @@ function Site(){
                 ))}
             </ul>
             <Link to="/">Назад</Link>
-        </div>
+        </VStack>
     )
 }
 export default Site;

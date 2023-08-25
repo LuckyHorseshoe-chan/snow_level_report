@@ -184,13 +184,33 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
         })
     }
 
+    const setMapping = () => {
+        const mapping = [
+            {"id": "ruler", "type": "centimeters", "heightCm": rulerHeight,
+            "pos": [calculateX(ruler.topLeft.x).toPrecision(prec), calculateY(ruler.topLeft.y).toPrecision(prec), 
+                calculateX(ruler.rightBottom.x).toPrecision(prec), calculateY(ruler.rightBottom.y).toPrecision(prec)]},
+            {"id": "datetime", "type": "timestamp", 
+            "pos": [calculateX(date.topLeft.x).toPrecision(prec), calculateY(date.topLeft.y).toPrecision(prec), 
+                calculateX(date.rightBottom.x).toPrecision(prec), calculateY(date.rightBottom.y).toPrecision(prec)]},
+        ]
+        if (isTemp){
+            mapping.push({"id": "temp", "type": "celsius", 
+            "pos": [calculateX(temp.topLeft.x).toPrecision(prec), calculateY(temp.topLeft.y).toPrecision(prec), 
+                calculateX(temp.rightBottom.x).toPrecision(prec), calculateY(temp.rightBottom.y).toPrecision(prec)]})
+        }
+        if (isType){
+            mapping.push({"id": "type", "type": "str", 
+            "pos": [calculateX(type.topLeft.x).toPrecision(prec), calculateY(type.topLeft.y).toPrecision(prec), 
+                calculateX(type.rightBottom.x).toPrecision(prec), calculateY(type.rightBottom.y).toPrecision(prec)]})
+        }
+        return mapping
+    }
+
     const recognizeData = () => {
         const textCoordinates = {
             "img_path": imgPath,
             "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
-            "type": [calculateX(type.topLeft.x), calculateX(type.rightBottom.x)],
-            "datetime": [calculateX(date.topLeft.x), calculateX(date.rightBottom.x)],
-            "temp": [calculateX(temp.topLeft.x), calculateX(temp.rightBottom.x)]
+            "mapping": setMapping()
         }
         console.log(textCoordinates)
         console.log(textCoordinates)
@@ -206,9 +226,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
 
         const rulerCoordinates = {
             "img_path": imgPath,
-            "topLeft": [calculateX(ruler.topLeft.x), calculateY(ruler.topLeft.y)],
-            "rightBottom": [calculateX(ruler.rightBottom.x), calculateY(ruler.rightBottom.y)],
-            "rulerHeight": rulerHeight
+            "mapping": setMapping()
         }
         console.log(rulerCoordinates)
         console.log(JSON.stringify(rulerCoordinates))
@@ -239,32 +257,21 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     }
 
     const processDataset = (e: any) => {
-        const mapping = [
-            {"id": "ruler", "type": "centimeters", "heightCm": rulerHeight,
-            "pos": [calculateX(ruler.topLeft.x).toPrecision(prec), calculateY(ruler.topLeft.y).toPrecision(prec), 
-                calculateX(ruler.rightBottom.x).toPrecision(prec), calculateY(ruler.rightBottom.y).toPrecision(prec)]},
-            {"id": "datetime", "type": "timestamp", 
-            "pos": [calculateX(date.topLeft.x).toPrecision(prec), calculateY(date.topLeft.y).toPrecision(prec), 
-                calculateX(date.rightBottom.x).toPrecision(prec), calculateY(date.rightBottom.y).toPrecision(prec)]},
-        ]
-        if (isTemp){
-            mapping.push({"id": "temp", "type": "celsius", 
-            "pos": [calculateX(temp.topLeft.x).toPrecision(prec), calculateY(temp.topLeft.y).toPrecision(prec), 
-                calculateX(temp.rightBottom.x).toPrecision(prec), calculateY(temp.rightBottom.y).toPrecision(prec)]})
-        }
-        if (isType){
-            mapping.push({"id": "type", "type": "str", 
-            "pos": [calculateX(type.topLeft.x).toPrecision(prec), calculateY(type.topLeft.y).toPrecision(prec), 
-                calculateX(type.rightBottom.x).toPrecision(prec), calculateY(type.rightBottom.y).toPrecision(prec)]})
-        }
+        const mapping = setMapping()
         fetch("http://localhost:8000/batches?site_id=" + siteId, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         }).then((response) => {
             return response.json();
         }).then((batches_list) => {
-            //return batches_list[batches_list.length-1][0]
-            return 38
+            let ind = -1;
+            for (let i = 0; i < batches_list.length; i++){
+                if (batches_list[i][0] > ind){
+                    ind = batches_list[i][0]
+                }
+            }
+            console.log(ind)
+            return ind
         }).then((batchId) => {
             const mapping_dict = {
                 "mapping": mapping,
@@ -280,23 +287,19 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
         }).then((batchId) => {
             const coordinates = {
                 "batchId": batchId,
-                "topLeft": [calculateX(ruler.topLeft.x), calculateY(ruler.topLeft.y)],
-                "rightBottom": [calculateX(ruler.rightBottom.x), calculateY(ruler.rightBottom.y)],
-                "rulerHeight": rulerHeight,
                 "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
-                "type": [calculateX(type.topLeft.x), calculateX(type.rightBottom.x)],
-                "datetime": [calculateX(date.topLeft.x), calculateX(date.rightBottom.x)],
-                "temp": [calculateX(temp.topLeft.x), calculateX(temp.rightBottom.x)]
+                "mapping": mapping
             }
             console.log(coordinates)
-            setActiveStep(2)
             fetch("http://localhost:8000/images", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(coordinates)
-            }).then((batch) => {
-                console.log(batch.json())
-                setActiveStep(3)
+            }).then((response) => {
+                return response.json()
+            }).then((response) => {
+                console.log(response["status"])
+                setActiveStep(2)
             })
         })
     }
