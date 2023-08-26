@@ -10,9 +10,10 @@ import ReportContainer from "./ReportContainer";
 function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: any}){
     const [data, setData] = useState<any>([])
     const [graph, setGraph] = useState(0)
+    const [status, setStatus] = useState(false)
     const { siteId } = useParams()
 
-    useEffect(() => {
+    const fetchData = () => {
         fetch("http://localhost:8000/batches?site_id=" + siteId, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -64,12 +65,24 @@ function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: a
                     return response.json()
                 }).then((status) => {
                     if (status["status"] == "success"){
+                        setStatus(true)
                         setActiveStep(3)
+                    } else{
+                        setStatus(false)
                     }
                 })
             })
         }) 
-    }, [graph])
+    }
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (!status) {
+                fetchData()
+            }
+        }, 10000)
+
+        return () => clearInterval(timer)
+    }, [status])
 
     const acceptResult = (e: any) => {
         fetch("http://localhost:8000/batch/status?status=accepted", {

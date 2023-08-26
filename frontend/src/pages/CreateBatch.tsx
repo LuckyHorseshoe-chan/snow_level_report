@@ -8,7 +8,19 @@ import Menu from "../components/Menu";
 
 function CreateBatch(){
     const { siteId } = useParams()
+    const [siteName, setSiteName] = useState("")
     const [ activeStep, setActiveStep ] = useState(0)
+
+    useEffect(() => {
+        fetch("http://localhost:8000/site?site_id=" + siteId, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        }).then((response) => {
+            return response.json();
+        }).then((site) => {
+            setSiteName(site["name"])    
+        })
+    }, [])
 
     const ProcessingStep = ({activeStep} : {activeStep: any}) => {
         if (activeStep == 0){
@@ -22,7 +34,7 @@ function CreateBatch(){
     return (
         <div id="create-obj-page">
             <div id="obj-text">
-                <p id="obj-name">Сопка/Новый набор</p>
+                <p id="obj-name">{siteName}/Новый набор</p>
             </div>
             <div id="create-obj-content">
                 <Menu activeStep={activeStep} setActiveStep={setActiveStep} />

@@ -11,6 +11,8 @@ import sys
 import json
 import time
 from celery import Celery
+import xlsxwriter
+import shutil
 #from roboflow import Roboflow
 from ultralytics import YOLO
 from bd_api import *
@@ -86,6 +88,15 @@ def recognize_text(coordinates):
         # проверить, насколько часто температура правильная (текст), улучшить обрезку
         return result
     except:
+        img_path = coordinates["img_path"]
+        path = os.getcwd() + '/static/' + img_path
+        name = img_path.split('/')[1]
+        err_dir = os.getcwd() + "/static/errors"
+        if (not os.path.exists(err_dir)):
+            os.makedirs(err_dir)
+        if (not os.path.exists(err_dir + "/coordinates/")):
+            os.makedirs(err_dir + "/coordinates/")
+        im.save(f'{err_dir}/coordinates/{name}')
         return {'type': "error", 'datetime': "error", 'temp': "error"}
 
 def calculate_ruler_height(coordinates):
@@ -97,9 +108,11 @@ def calculate_ruler_height(coordinates):
             pos = [float(x) for x in dic["pos"]]
             ruler_height = dic["heightCm"]
     pix_ruler_height = pos[3] - pos[1]
-    if not pix_ruler_height:
-        return -999
     path = os.getcwd() + '/static/' + img_path
+    if not pix_ruler_height:
+        im = Image.open(path)
+        im.save(f'{err_dir}/snow_level/{name}')
+        return -999
     #im = Image.open(path)
     #ruler = im.crop((coordinates["topLeft"][0], coordinates["topLeft"][1], \ 
     #        coordinates["rightBottom"][0], coordinates["rightBottom"][1]))
@@ -124,16 +137,44 @@ def calculate_ruler_height(coordinates):
     pix_snow_height = pos[3] - ind
     return pix_snow_height * int(ruler_height) / pix_ruler_height
 
+def form_report(data):
+    daily_data = data['daily']
+    monthly_data = data['monthly']
+    workbook = xlsxwriter.Workbook('report.xlsx')
+    daily = workbook.add_worksheet('Daily')
+    monthly = workbook.add_worksheet('Monthly')
+    for col, key in enumerate(daily_data[0].keys()):
+        daily.write(0, col, key)
+    for col, key in enumerate(monthly_data[0].keys()):
+        monthly.write(0, col, key)
+    for i in range(len(daily_data)):
+        for col, value in enumerate(daily_data[i].values()):
+            daily.write(i + 1, col, value)
+    for i in range(len(monthly_data)):
+        for col, value in enumerate(monthly_data[i].values()):
+            monthly.write(i + 1, col, value)
+    workbook.close()
+
+
+def get_errors():
+    shutil.make_archive('errors', 'zip', os.getcwd() + '/static/errors')
+
+def delete_files():
+    folder = os.getcwd() + '/static/'
+    shutil.rmtree(folder)
+    os.makedirs(folder)
+
 @celery_app.task(name="process_dataset")
 def process_dataset(coordinates):
     result = recognize_text(coordinates)
-    result['ruler'] = calculate_ruler_height(coordinates) 
     for value in result.values():
         if value == "error":
             return 'error'
+    result['ruler'] = calculate_ruler_height(coordinates) 
     insert_data_point(coordinates["batchId"], result)
     return 'inserted'
 
+"""
 @celery_app.task(name="create_task")
 def create_task(task_type):
     time.sleep(int(task_type) * 10)
@@ -143,7 +184,7 @@ def create_task(task_type):
 def print_batch():
     batch = get_batch(1)
     return {"batch": batch}
-
+"""
 #if __name__ == '__main__':
     #print_batch.delay()
     #process_dataset(json.loads(sys.argv[1]))

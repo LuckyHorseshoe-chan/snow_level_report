@@ -321,6 +321,7 @@ input[type=file]#img-upload::file-selector-button{
   background-image: url("./icons/upload_folder.png");
   background-repeat: no-repeat;
   background-position: center;
+  background-size: contain;
   color: rgb(0, 0, 0, 0);
   margin-top: 50px;
 }

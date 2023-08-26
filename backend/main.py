@@ -96,6 +96,7 @@ async def del_batches(batch_ids: dict):
 
 @app.post("/upload")
 async def upload_zip(file: UploadFile):
+    delete_files()
     path = os.getcwd() + '/static/'
     with open(f'{path}{file.filename}', 'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -148,3 +149,15 @@ async def get_tasks():
     if (len(new_tasks)):
         return {"status": "pending"}
     return {"status": "success"}
+
+@app.post("/form_report")
+async def get_report(data: dict):
+    form_report(data)
+
+@app.get("/form_errors")
+async def get_errors():
+    form_errors()
+
+@app.get("/clear_static")
+async def clear_static():
+    delete_files()

@@ -32,11 +32,7 @@ function ReportContainer({data}: {data: any}){
 
     useEffect(() => {
         setDataSlice(data.slice(minInd, maxInd))
-    }, [minInd, maxInd])
-
-    useEffect(() => {
-        console.log(data)
-    }, [data])
+    }, [minInd, maxInd, data])
 
     const selectMinDate = (e: any) => {
         console.log(e.target.value)
