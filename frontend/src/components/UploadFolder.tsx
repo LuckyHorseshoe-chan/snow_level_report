@@ -1,19 +1,21 @@
 import { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom'
+import { VStack, HStack, Button } from '@chakra-ui/react'
 import axios from 'axios'
 
 function UploadFolder({setActiveStep} : {setActiveStep: any}){
     const [file, setFile] = useState<File[]>()
     const [fileName, setFileName] = useState("")
     const [comment, setComment] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
     const { siteId } = useParams()
 
     const uploadFile = (e: any) => {
-        const imgUpload = document.getElementById("img-upload")
+        //const imgUpload = document.getElementById("img-upload")
         setFile(e.target.files)
-        if (!imgUpload) return
-        imgUpload.style.backgroundImage = "url('/img_uploaded')"
-        setFileName(e.target.file[0].name)
+        //if (!imgUpload) return
+        //imgUpload.style.background = "url('/img_uploaded.png')"
+        setFileName(e.target.files[0].name)
     }
 
     const writeComment = (e: any) =>{
@@ -21,10 +23,10 @@ function UploadFolder({setActiveStep} : {setActiveStep: any}){
     }
 
     const handleSubmit = () => {
-        console.log("undefined")
         if (!file){
             return
         }
+        setIsLoading(true)
         console.log(file[0].name)
         const formdata = new FormData();
         formdata.append(
@@ -57,7 +59,9 @@ function UploadFolder({setActiveStep} : {setActiveStep: any}){
             <input className="obj-input" onChange={writeComment}></input>
             <input type="file" id="img-upload" onChange={uploadFile}/>
             <p>{fileName}</p>
-            <button className="green-button" onClick={handleSubmit}>Загрузить</button>
+            <button className="green-button" onClick={handleSubmit}>
+                {isLoading ? "Загрузка..." : "Загрузить"}
+            </button>
         </div>
     )
 }

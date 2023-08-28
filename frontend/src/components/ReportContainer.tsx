@@ -30,8 +30,22 @@ function ReportContainer({data}: {data: any}){
     const [dataSlice, setDataSlice] = useState(data)
     const [reportType, setReportType] = useState<string>('daily')
 
+    const prec = 3
+
     useEffect(() => {
-        setDataSlice(data.slice(minInd, maxInd))
+        const dailyReport = data.slice(minInd, maxInd)
+        const monthReport = monthlyReport(dailyReport)
+        if (reportType === 'daily') setDataSlice(dailyReport)
+        else setDataSlice(monthReport)
+        const report_data = {
+            'daily': dailyReport,
+            'monthly': monthReport
+        }
+        fetch("http://localhost:8000/form_report", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(report_data)
+        })
     }, [minInd, maxInd, data])
 
     const selectMinDate = (e: any) => {
@@ -176,8 +190,8 @@ function ReportContainer({data}: {data: any}){
                                         <Tr>
                                             <Th>{row.name}</Th>
                                             <Th>{row.datetime}</Th>
-                                            <Th isNumeric>{row.ruler}</Th>
-                                            <Th isNumeric>{row.temp}</Th>
+                                            <Th isNumeric>{row.ruler.toPrecision(prec)}</Th>
+                                            <Th isNumeric>{row.temp.toPrecision(prec)}</Th>
                                         </Tr>
                                     ))}
                                 </Tbody>:
@@ -187,11 +201,11 @@ function ReportContainer({data}: {data: any}){
                                             <Th>{row.name}</Th>
                                             <Th isNumeric>{row.datetime.slice(5, 7)}</Th>
                                             <Th isNumeric>{row.datetime.slice(0, 4)}</Th>
-                                            <Th isNumeric>{row.ruler}</Th>
-                                            <Th isNumeric>{row.temp}</Th>
-                                            <Th isNumeric>{row.maxSnow}</Th>
+                                            <Th isNumeric>{row.ruler.toPrecision(prec)}</Th>
+                                            <Th isNumeric>{row.temp.toPrecision(prec)}</Th>
+                                            <Th isNumeric>{row.maxSnow.toPrecision(prec)}</Th>
                                             <Th>{row.maxSnowDate}</Th>
-                                            <Th isNumeric>{row.minSnow}</Th>
+                                            <Th isNumeric>{row.minSnow.toPrecision(prec)}</Th>
                                             <Th>{row.minSnowDate}</Th>
                                         </Tr>
                                     ))}

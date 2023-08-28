@@ -44,8 +44,11 @@ def recognize_text(coordinates):
         err_dir = os.getcwd() + "/static/errors"
         if (not os.path.exists(err_dir)):
             os.makedirs(err_dir)
+        if (not os.path.exists(err_dir + "/type/")):
             os.makedirs(err_dir + "/type/")
+        if (not os.path.exists(err_dir + "/temp/")):
             os.makedirs(err_dir + "/temp/")
+        if (not os.path.exists(err_dir + "/datetime/")):
             os.makedirs(err_dir + "/datetime/")
         for dic in mapping:
             pos = [float(x) for x in dic["pos"]]
@@ -82,6 +85,9 @@ def recognize_text(coordinates):
                         break
                 try:
                     result['temp'] = int(temperature)
+                    if result['temp'] > 50 or result['temp'] < -90:
+                        result['temp'] = "error"
+                        im.save(f'{err_dir}/temp/{name}')
                 except:
                     result['temp'] = "error"
                     im.save(f'{err_dir}/temp/{name}')
@@ -141,23 +147,50 @@ def form_report(data):
     daily_data = data['daily']
     monthly_data = data['monthly']
     workbook = xlsxwriter.Workbook('report.xlsx')
+    if not (len(daily_data) and len(monthly_data)):
+        workbook.close()
+        shutil.move(os.getcwd() + '/report.xlsx', os.getcwd() + '/static/report.xlsx')
+        return
     daily = workbook.add_worksheet('Daily')
     monthly = workbook.add_worksheet('Monthly')
-    for col, key in enumerate(daily_data[0].keys()):
-        daily.write(0, col, key)
-    for col, key in enumerate(monthly_data[0].keys()):
-        monthly.write(0, col, key)
+    keys_dic = {'name': 0, 'datetime': 1, 'ruler': 2, 'temp': 3}
+    col_names = ['Gauge-Name', 'Date', 'Snow depth, cm', 'Temperature, ℃']
+    for key in daily_data[0].keys():
+        if key == 'type':
+            continue
+        daily.write(0, keys_dic[key], col_names[keys_dic[key]])
     for i in range(len(daily_data)):
-        for col, value in enumerate(daily_data[i].values()):
-            daily.write(i + 1, col, value)
+        for key, value in daily_data[i].items():
+            if key == 'type':
+                continue
+            daily.write(i + 1, keys_dic[key], value)
+    keys_dic = {'name': 0, 'ruler': 3, 'temp': 4, 'maxSnow': 5, 'maxSnowDate': 6, 'minSnow': 7, 'minSnowDate': 8}
+    col_names = ['Gauge-Name', 'Month', 'Year', 'Average snow depth, cm', 'Average temperature, ℃', \
+    'Maximum snow depth, cm', 'Date of maximum snow depth, cm', 'Minimum snow depth, cm', 'Data of minimum snow depth']
+    for key in monthly_data[0].keys():
+        if key == 'datetime':
+            monthly.write(0, 1, 'Month')
+            monthly.write(0, 2, 'Year')
+            continue
+        if key == 'type':
+            continue
+        monthly.write(0, keys_dic[key], col_names[keys_dic[key]])
     for i in range(len(monthly_data)):
-        for col, value in enumerate(monthly_data[i].values()):
-            monthly.write(i + 1, col, value)
+        for key, value in monthly_data[i].items():
+            if key == 'type':
+                continue
+            if key == 'datetime':
+                monthly.write(i + 1, 1, value[5:7])
+                monthly.write(i + 1, 2, value[:4])
+                continue
+            monthly.write(i + 1, keys_dic[key], value)
     workbook.close()
+    shutil.move(os.getcwd() + '/report.xlsx', os.getcwd() + '/static/report.xlsx')
 
 
-def get_errors():
+def form_errors():
     shutil.make_archive('errors', 'zip', os.getcwd() + '/static/errors')
+    shutil.move(os.getcwd() + '/errors.zip', os.getcwd() + '/static/errors.zip')
 
 def delete_files():
     folder = os.getcwd() + '/static/'

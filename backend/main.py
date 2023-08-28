@@ -133,7 +133,7 @@ async def process_batch(coordinates: dict):
     folder = os.listdir(path)[0]
     files = os.listdir(f'{path}{folder}')
     tasks = []
-    for i in range(10):
+    for i in range(20):
         coordinates["img_path"] = f'{folder}/{files[i]}'
         run_worker(coordinates)
     #coordinates["img_path"] = f'{folder}/{files[0]}'

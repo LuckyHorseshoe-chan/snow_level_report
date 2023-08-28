@@ -9,7 +9,7 @@ import Plus from "../components/Plus";
 function Site(){
     const [name, setName] = useState('')
     const [comment, setComment] = useState('')
-    const [batches, setBatches] = useState([])
+    const [batches, setBatches] = useState<string[]>([])
     const [checked, setChecked] = useState<string[]>([])
     const [confirmMessage, setConfirmMessage] = useState('Уверены, что хотите удалить этот объект?')
 
@@ -37,14 +37,14 @@ function Site(){
         if (checked.length !== 0){
             console.log(JSON.stringify(checked))
             fetch("http://localhost:8000/batches", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({"batch_ids": checked})
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({"batch_ids": checked})
         })
         } else{
             fetch("http://localhost:8000/site?site_id=" + siteId, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" }
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
             })
             navigate('/')
         }
@@ -112,7 +112,9 @@ function Site(){
                 </Link>
                 {batches.map((batch, i) => (
                     <li key={i} className="item" id={batch[0]} onClick={handleClick}>
-                        <SiteText name={(batch[2] + '-' + batch[3])} date={batch[5]} batches=''/>
+                        <SiteText 
+                                name={`${batch[2].slice(8, 10)}.${batch[2].slice(5, 7)}.${batch[2].slice(0, 4)}-${batch[3].slice(8, 10)}.${batch[3].slice(5, 7)}.${batch[3].slice(0, 4)}`} 
+                                date={batch[5]} batches=''/>
                     </li>
                 ))}
             </ul>

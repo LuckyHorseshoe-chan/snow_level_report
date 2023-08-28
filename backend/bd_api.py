@@ -108,8 +108,8 @@ def get_data_points(batch_id):
 def update_batch_status(status):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
-    sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = %s"
-    cur.execute(sql, (start_date, end_date, processed_at, batch_id))
+    sql = "UPDATE batches SET status = %s WHERE batch_id = (SELECT MAX(batch_id) FROM batches)"
+    cur.execute(sql, (status,))
     cur.close()
     conn.commit()
     conn.close()
