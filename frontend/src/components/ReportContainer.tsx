@@ -46,7 +46,7 @@ function ReportContainer({data}: {data: any}){
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(report_data)
         })
-    }, [minInd, maxInd, data])
+    }, [minInd, maxInd])
 
     const selectMinDate = (e: any) => {
         console.log(e.target.value)

@@ -401,12 +401,9 @@ input[type=file]#img-upload::file-selector-button{
 }
 
 #file-tree{
-  display: flex;
-  align-items: center;
-  justify-content: top;
-  width: 100px;
-  height: 600px;
-  border: 1px solid green;
+  overflow-y: auto;
+  width: 30vh;
+  height: 95vh;
 }
 
 .borderBlack {

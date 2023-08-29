@@ -161,3 +161,11 @@ async def get_errors():
 @app.get("/clear_static")
 async def clear_static():
     delete_files()
+
+@app.get("/batch_tree")
+async def get_tree():
+    return get_batch_tree()
+
+@app.post("/report/data_points")
+async def get_report_data_points(batches: dict):
+    return get_dp_by_batches_lst(batches["batches"])

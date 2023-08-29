@@ -105,6 +105,26 @@ def get_data_points(batch_id):
     conn.close()
     return data_points
 
+def get_batch_tree():
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM sites")
+    sites = cur.fetchall()
+    sites_dic = []
+    for site in sites:
+        sites_dic.append({"site_id": site[0], "name": site[1], "batches": []})
+        sql = "SELECT * FROM batches WHERE site_id = %s"
+        cur.execute(sql, (site[0],))
+        batches = cur.fetchall()
+        for batch in batches:
+            start_date, end_date = str(batch[2]), str(batch[3])
+            name = f'{start_date[8:]}.{start_date[5:7]}.{start_date[:4]}-{end_date[8:]}.{end_date[5:7]}.{end_date[:4]}'
+            sites_dic[-1]["batches"].append({"batch_id": batch[0], "name": name})
+    cur.close()
+    conn.commit()
+    conn.close()
+    return sites_dic
+
 def update_batch_status(status):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
@@ -148,3 +168,23 @@ def get_all_data():
     conn.commit()
     conn.close()
     return sites, batches, data_points
+
+def get_dp_by_batches_lst(batches):
+    data_points = []
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
+    cur = conn.cursor()
+    sql = "SELECT * FROM \
+    (SELECT data_points.batch_id, data_points.data, sites.name FROM data_points \
+    JOIN batches ON batches.batch_id = data_points.batch_id \
+    JOIN sites ON sites.site_id = batches.site_id) AS x \
+    WHERE batch_id IN (%s)" % ','.join([str(x) for x in batches])
+    cur.execute(sql)
+    all_data = cur.fetchall()
+    data_points = []
+    for el in all_data:
+        data_points.append(el[1])
+        data_points[-1]["name"] = el[2]
+    cur.close()
+    conn.commit()
+    conn.close()
+    return data_points
