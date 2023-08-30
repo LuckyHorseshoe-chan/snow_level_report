@@ -258,49 +258,24 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
 
     const processDataset = (e: any) => {
         const mapping = setMapping()
-        fetch("http://localhost:8000/batches?site_id=" + siteId, {
-            method: "GET",
+        const coordinates = {
+            "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
+            "mapping": mapping
+        }
+        console.log(coordinates)
+        fetch("http://localhost:8000/images", {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(coordinates)
         }).then((response) => {
-            return response.json();
-        }).then((batches_list) => {
-            let ind = -1;
-            for (let i = 0; i < batches_list.length; i++){
-                if (batches_list[i][0] > ind){
-                    ind = batches_list[i][0]
-                }
-            }
-            console.log(ind)
-            return ind
-        }).then((batchId) => {
-            const mapping_dict = {
-                "mapping": mapping,
-                "batch_id": batchId
-            }
-            //console.log(JSON.stringify(mapping_dict))
-            fetch("http://localhost:8000/batch/mapping", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(mapping_dict)
-            })
-            return batchId
-        }).then((batchId) => {
-            const coordinates = {
-                "batchId": batchId,
-                "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
-                "mapping": mapping
-            }
-            console.log(coordinates)
-            fetch("http://localhost:8000/images", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(coordinates)
-            }).then((response) => {
-                return response.json()
-            }).then((response) => {
-                console.log(response["status"])
+            return response.json()
+        }).then((response) => {
+            console.log(response["status"])
+            if (response["status"] == 'fail'){
+                setActiveStep(3)
+            } else{
                 setActiveStep(2)
-            })
+            }
         })
     }
 

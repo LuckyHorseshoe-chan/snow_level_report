@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 import json
 import subprocess
+import datetime
 from celery.result import AsyncResult
 
 import shutil
@@ -52,11 +53,11 @@ async def put_batch_status(status):
 
 @app.put("/batch/dates")
 async def put_batch_dates(dates: dict):
-    update_batch_dates(dates["batch_id"], dates["start_date"], dates["end_date"], dates["processed_at"])
+    update_batch_dates(dates["start_date"], dates["end_date"], dates["processed_at"])
 
 @app.put("/batch/mapping")
 async def put_batch_mapping(mapping: dict):
-    update_batch_mapping(mapping["mapping"], mapping["batch_id"])
+    update_batch_mapping(mapping["mapping"])
     return {"map": json.dumps(mapping["mapping"])}
 
 @app.post("/data_point")
@@ -97,6 +98,13 @@ async def del_batches(batch_ids: dict):
 @app.post("/upload")
 async def upload_zip(file: UploadFile):
     delete_files()
+    err_dir = os.getcwd() + "/static/errors"
+    os.makedirs(err_dir)
+    os.makedirs(err_dir + "/type/")
+    os.makedirs(err_dir + "/temp/")
+    os.makedirs(err_dir + "/datetime/")
+    os.makedirs(err_dir + "/coordinates/")
+    os.makedirs(err_dir + "/snow_level/")
     path = os.getcwd() + '/static/'
     with open(f'{path}{file.filename}', 'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -126,14 +134,17 @@ def run_worker(coordinates):
 @app.post("/images")
 async def process_batch(coordinates: dict):
     keys = coordinates.keys()
-    if ("batchId" not in keys or "strip_size" not in keys or "mapping" not in keys \
-    or not coordinates["mapping"] or not coordinates["batchId"] or not coordinates["strip_size"]):
+    if ("strip_size" not in keys or "mapping" not in keys \
+    or not coordinates["mapping"] or not coordinates["strip_size"]):
         return {"status": "fail"}
+    update_batch_mapping(coordinates["mapping"])
     path = os.getcwd() + '/static/'
-    folder = os.listdir(path)[0]
+    for d in os.listdir(path):
+        if d != 'errors' and os.path.isdir(f'{path}{d}'):
+            folder = d
     files = os.listdir(f'{path}{folder}')
     tasks = []
-    for i in range(20):
+    for i in range(len(files)):
         coordinates["img_path"] = f'{folder}/{files[i]}'
         run_worker(coordinates)
     #coordinates["img_path"] = f'{folder}/{files[0]}'
@@ -148,6 +159,11 @@ async def get_tasks():
             new_tasks.append(task)
     if (len(new_tasks)):
         return {"status": "pending"}
+    data_points = get_dp_by_batches_lst([-1])
+    if len(data_points):
+        dates = [dp["datetime"] for dp in data_points]
+        update_batch_dates(min(dates), max(dates), datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"))
+        form_errors()
     return {"status": "success"}
 
 @app.post("/form_report")
@@ -168,4 +184,6 @@ async def get_tree():
 
 @app.post("/report/data_points")
 async def get_report_data_points(batches: dict):
+    if not len(batches["batches"]):
+        return []
     return get_dp_by_batches_lst(batches["batches"])

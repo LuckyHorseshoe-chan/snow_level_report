@@ -25,6 +25,9 @@ def insert_data_point(batch_id, data):
     cur = conn.cursor()
     sql = "INSERT INTO data_points(batch_id, data) VALUES (%s, %s)"
     #batches = [(batch_id, json.dumps(el)) for el in json.loads(data)]
+    if batch_id < 0:
+        cur.execute("SELECT MAX(batch_id) FROM batches")
+        batch_id = cur.fetchone()[0]
     cur.execute(sql, (batch_id, json.dumps(data)))
     cur.close()
     conn.commit()
@@ -134,20 +137,20 @@ def update_batch_status(status):
     conn.commit()
     conn.close()
 
-def update_batch_dates(batch_id, start_date, end_date, processed_at):
+def update_batch_dates(start_date, end_date, processed_at):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
-    sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = %s"
-    cur.execute(sql, (start_date, end_date, processed_at, batch_id))
+    sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = (SELECT MAX(batch_id) FROM batches)"
+    cur.execute(sql, (start_date, end_date, processed_at))
     cur.close()
     conn.commit()
     conn.close()
 
-def update_batch_mapping(mapping, batch_id):
+def update_batch_mapping(mapping):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
-    sql = "UPDATE batches SET mapping = %s WHERE batch_id = %s"
-    cur.execute(sql, (json.dumps(mapping), batch_id))
+    sql = "UPDATE batches SET mapping = %s WHERE batch_id = (SELECT MAX(batch_id) FROM batches)"
+    cur.execute(sql, (json.dumps(mapping),))
     cur.close()
     conn.commit()
     conn.close()
@@ -173,6 +176,9 @@ def get_dp_by_batches_lst(batches):
     data_points = []
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
+    if batches[0] < 0:
+        cur.execute("SELECT MAX(batch_id) FROM batches")
+        batches = cur.fetchone()
     sql = "SELECT * FROM \
     (SELECT data_points.batch_id, data_points.data, sites.name FROM data_points \
     JOIN batches ON batches.batch_id = data_points.batch_id \
