@@ -1,4 +1,4 @@
-import { Button, HStack, VStack } from '@chakra-ui/react'
+import { Button, HStack, VStack, Input } from '@chakra-ui/react'
 import {useEffect, useState} from 'react'
 import { useParams } from 'react-router-dom'
 import Konva from 'konva'
@@ -292,7 +292,10 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                     <p className='img-text'>
                         Нижний правый угол: ({calculateX(ruler.rightBottom.x).toPrecision(prec)}, {calculateY(ruler.rightBottom.y).toPrecision(prec)})
                     </p>
-                    <p className='img-text'>Высота рейки (см): <input onChange={onChange}></input></p>
+                    <HStack>
+                        <p className='img-text'>Высота рейки (см):</p>
+                        <Input onChange={onChange} style={{width: 100, height: 20}}></Input>
+                    </HStack>
                     <p className='img-text'>Распознанное значение (см): {Number(snowHeight).toPrecision(prec)}</p>
                 </div>
                 <div className="rect-info" id="rect-type">

@@ -68,6 +68,7 @@ function ReportContainer({ids}: {ids: number[]}){
 
     useEffect(() => {
         if (data){
+            if (!maxInd) {setMaxInd(data.length)}
             const dailyReport = data.slice(minInd, maxInd)
             const monthReport = monthlyReport(dailyReport)
             if (reportType === 'daily') setDataSlice(dailyReport)
