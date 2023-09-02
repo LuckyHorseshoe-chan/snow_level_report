@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - 8000:8000
+    command: uvicorn main:app --host 0.0.0.0 --reload
+    depends_on:
+      - redis
+      - db
+      - server
+  server:
+    image: python:3.10.12
+    ports:
+      - 8080:8080
+    command: python3 -m http.server 8080
+  worker:
+    build: ./backend
+    command: celery -A image_processing worker --loglevel=INFO --logfile=logs/celery.log
+    depends_on:
+      - redis
+      - backend
+      - db
+  redis:
+    image: redis:latest
+  db:
+    image: postgres:14
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    environment:
+      POSTGRES_DB: objects
+      POSTGRES_USER: lucky
+      POSTGRES_PASSWORD: "12345"
+    volumes: 
+      - ./db:/db
+  frontend:
+    build: ./frontend
+    ports: 
+      - 3000:3000
+    depends_on:
+      - backend
+
