@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { VStack, HStack, Button } from '@chakra-ui/react'
+import { useState, useEffect } from "react";
 import { useParams, Link } from 'react-router-dom'
 import UploadFolder from "../components/UploadFolder";
 import ImageCoordinates from "../components/ImageCoordinates";

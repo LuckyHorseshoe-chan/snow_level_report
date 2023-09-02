@@ -1,11 +1,10 @@
 import { HStack, VStack, Checkbox, Stack, Box, Button } from '@chakra-ui/react'
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom'
 import {
     useQuery
   } from '@tanstack/react-query'
 import axios from 'axios'
-import Report from '../components/Report';
 import ReportContainer from '../components/ReportContainer';
 
 const getBatchTree = async () => {
@@ -43,7 +42,6 @@ function CreateReport(){
             for (let i = 0; i < batches.length; i++){
                 if(checkedBatches.indexOf(batches[i].batch_id) < 0) checked.push(batches[i].batch_id)
             }
-            //console.log(checkedBatches)
             setCheckedBatches([...checkedBatches, ...checked])
         } 
         else{
@@ -56,33 +54,12 @@ function CreateReport(){
             for (let i = 0; i < batches.length; i++){
                 indxs.push(checked.indexOf(batches[i].batch_id))
             }
-            //console.log(indxs)
             checked = checked.filter(function(value, index) {
                 return indxs.indexOf(index) == -1;
             })
-            //console.log(checked)
             setCheckedBatches(checked)
         }
-        //console.log(checkedBatches)
     }
-
-    // const showReport = (e: any) => {
-    //     fetch("http://localhost:8000/report/data_points", {
-    //         method: "POST",
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify({"batches": checkedBatches})
-    //     })
-    //     .then((res) => res.json())
-    //     .then((report_data) => setReportData(report_data.sort(function(a: any, b: any){
-    //         if (a.datetime > b.datetime){
-    //             return 1
-    //         } else if(a.datetime < b.datetime){
-    //             return -1
-    //         }
-    //         return 0;
-    //     })))
-    //     console.log(reportData)
-    // }
 
     const downloadReport = () => {
         const link = document.createElement('a')

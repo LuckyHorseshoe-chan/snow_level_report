@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import useSWR from "swr";
 import { Link } from 'react-router-dom'
 import Plus from "./Plus";
 import SiteText from "./SiteText"
