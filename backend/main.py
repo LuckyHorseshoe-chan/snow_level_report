@@ -32,6 +32,8 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+cwd = os.environ['CWD']
+
 @app.get("/")
 async def root():
     sites, batches, data_points = get_all_data()
@@ -44,8 +46,8 @@ async def create_site(site: dict):
 
 @app.post("/batch")
 async def create_batch(batch: dict):
-    insert_batch(batch["site_id"], batch["start_date"], batch["end_date"], batch["createdAt"], \
-                batch["processedAt"], batch["mapping"], batch["status"], batch["comment"])
+    insert_batch(batch["site_id"], batch["start_date"], batch["end_date"], datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"), \
+                datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"), batch["mapping"], batch["status"], batch["comment"])
 
 @app.put("/batch/status")
 async def put_batch_status(status):
@@ -98,18 +100,17 @@ async def del_batches(batch_ids: dict):
 @app.post("/upload")
 async def upload_zip(file: UploadFile):
     delete_files()
-    err_dir = os.getcwd() + "/static/errors"
+    err_dir = cwd + "errors"
     os.makedirs(err_dir)
     os.makedirs(err_dir + "/type/")
     os.makedirs(err_dir + "/temp/")
     os.makedirs(err_dir + "/datetime/")
     os.makedirs(err_dir + "/coordinates/")
     os.makedirs(err_dir + "/snow_level/")
-    path = os.getcwd() + '/static/'
-    with open(f'{path}{file.filename}', 'wb') as buffer:
+    with open(f'{cwd}{file.filename}', 'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
-    unzip_file(f'{path}{file.filename}', path)
-    os.remove(f'{path}{file.filename}')
+    unzip_file(f'{cwd}{file.filename}', cwd)
+    os.remove(f'{cwd}{file.filename}')
     return {"filename": file.filename}
 
 @app.get("/img_path")
@@ -138,11 +139,10 @@ async def process_batch(coordinates: dict):
     or not coordinates["mapping"] or not coordinates["strip_size"]):
         return {"status": "fail"}
     update_batch_mapping(coordinates["mapping"])
-    path = os.getcwd() + '/static/'
-    for d in os.listdir(path):
-        if d != 'errors' and os.path.isdir(f'{path}{d}'):
+    for d in os.listdir(cwd):
+        if d != 'errors' and os.path.isdir(f'{cwd}{d}'):
             folder = d
-    files = os.listdir(f'{path}{folder}')
+    files = os.listdir(f'{cwd}{folder}')
     tasks = []
     for i in range(len(files)):
         coordinates["img_path"] = f'{folder}/{files[i]}'
