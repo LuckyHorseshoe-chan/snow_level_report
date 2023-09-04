@@ -65,7 +65,7 @@ function CreateReport(){
         const link = document.createElement('a')
         link.download = 'Report'
 
-        link.href = "http://localhost:8080/static/report.xlsx"
+        link.href = "http://localhost:8080/app/report.xlsx"
 
         link.click()
     }

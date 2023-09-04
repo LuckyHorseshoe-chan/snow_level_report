@@ -38,8 +38,6 @@ function UploadFolder({setActiveStep} : {setActiveStep: any}){
                 "comment": comment,
                 "start_date": "1900-01-01",
                 "end_date": "1900-01-01",
-                "createdAt": new Date().toJSON(),
-                "processedAt": new Date().toJSON(),
                 "mapping": [],
                 "status": "rejected"
             }

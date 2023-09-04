@@ -5,20 +5,37 @@ services:
     build: ./backend
     ports:
       - 8000:8000
+    environment:
+      - CWD=/app/
     command: uvicorn main:app --host 0.0.0.0 --reload
     depends_on:
       - redis
       - db
-      - server
+      - proxy
+    volumes:
+      - app:/app
   server:
+    build: ./backend
+    ports:
+      - 8080:8080
+    command: python3 -m http.server 8080
+    volumes:
+      - app:/app
+  proxy:
     image: caddy:latest
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/Caddyfile
   worker:
     build: ./backend
-    command: celery -A image_processing worker --loglevel=INFO --logfile=logs/celery.log
+    environment:
+      - CWD=/app/
+    command: celery -A image_processing worker --loglevel=INFO
+    volumes:
+      - app:/app
     depends_on:
       - redis
       - backend
@@ -36,11 +53,13 @@ services:
       POSTGRES_USER: lucky
       POSTGRES_PASSWORD: "12345"
     volumes: 
-      - ./db:/db
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
   frontend:
     build: ./frontend
     ports: 
       - 3000:3000
     depends_on:
       - backend
-
+      - server
+volumes:
+  app:

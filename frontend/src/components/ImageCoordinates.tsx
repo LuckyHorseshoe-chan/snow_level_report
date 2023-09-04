@@ -179,7 +179,7 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
             setImgPath(data.img_url)
             console.log(data.img_url)
             if (imgDiv){
-                imgDiv.style.backgroundImage = "url('http://localhost:8080/static/" + data.img_url + "')"
+                imgDiv.style.backgroundImage = "url('http://localhost:8080/app/" + data.img_url + "')"
             }
         })
     }

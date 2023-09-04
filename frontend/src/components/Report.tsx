@@ -52,7 +52,7 @@ function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: a
         const link = document.createElement('a')
         link.download = 'Mistakes'
 
-        link.href = "http://localhost:8080/static/errors.zip"
+        link.href = "http://localhost:8080/app/errors.zip"
 
         link.click()
     }
@@ -60,7 +60,7 @@ function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: a
         const link = document.createElement('a')
         link.download = 'Report'
 
-        link.href = "http://localhost:8080/static/report.xlsx"
+        link.href = "http://localhost:8080/app/report.xlsx"
 
         link.click()
     }
