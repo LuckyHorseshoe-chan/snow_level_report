@@ -13,7 +13,6 @@ import time
 from celery import Celery
 import xlsxwriter
 import shutil
-#from roboflow import Roboflow
 from ultralytics import YOLO
 from bd_api import *
 
@@ -34,67 +33,70 @@ def choose_random_image():
     return f'{root}/{files[ind]}'
 
 def recognize_text(coordinates):
-    #try:
-    result = {}
-    img_path = coordinates["img_path"]
-    path = cwd + img_path
-    name = img_path.split('/')[1]
-    strip_size = int(coordinates["strip_size"])
-    mapping = coordinates["mapping"]
-    im = Image.open(path)
-    k = 2
-    strip = ImageOps.invert(im.crop((0, im.size[1]-strip_size, im.size[0], im.size[1]))).resize((k*im.size[0], k*strip_size))
-    for dic in mapping:
-        pos = [float(x) for x in dic["pos"]]
-        if dic["id"] == 'type':
-            strip_type = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
-            img_type = pytesseract.image_to_string(strip_type, config="--psm 7")
-            if img_type.find("M") != -1:
-                result['type'] = "M"
-            elif img_type.find("T") != -1:
-                result['type'] = "T"
-            else:
-                result['type'] = "error"
-                im.save(f'{err_dir}/type/{name}')
-        elif dic["id"] == 'datetime':         
-            strip_datetime = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
-            text = pytesseract.image_to_string(strip_datetime, config="--psm 7").split()
-            datetime = []
-            for t in text:
-                if t[0] >= '0' and t[0] <='9':
-                    datetime.append(t)
-            if len(datetime) != 2 or len(datetime[0]) != 10 or len(datetime[1]) != 8:
-                result['datetime'] = "error"
-                im.save(f'{err_dir}/datetime/{name}')
-            else:
-                date, time = datetime[0], datetime[1]
-                date = f'{date[6:]}-{date[3:5]}-{date[:2]}'
-                result['datetime'] = f'{date} {time}'
-        elif dic["id"] == 'temp':
-            strip_temperature = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
-            temperature = pytesseract.image_to_string(strip_temperature, config="--psm 7")
-            for i in range(len(temperature)):
-                if temperature[i] != '-' and (temperature[i] > '9' or temperature[i] < '0'):
-                    temperature = temperature[:i]
-                    break
-            try:
-                result['temp'] = int(temperature)
-                if result['temp'] > 50 or result['temp'] < -90:
+    try:
+        result = {}
+        img_path = coordinates["img_path"]
+        path = cwd + img_path
+        name = img_path.split('/')[1]
+        strip_size = int(coordinates["strip_size"])
+        mapping = coordinates["mapping"]
+        im = Image.open(path)
+        k = 2
+        strip = ImageOps.invert(im.crop((0, im.size[1]-strip_size, im.size[0], im.size[1]))).resize((k*im.size[0], k*strip_size))
+        for dic in mapping:
+            pos = [float(x) for x in dic["pos"]]
+            if dic["id"] == 'type':
+                strip_type = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
+                img_type = pytesseract.image_to_string(strip_type, config="--psm 7")
+                if img_type.find("M") != -1:
+                    result['type'] = "M"
+                elif img_type.find("T") != -1:
+                    result['type'] = "T"
+                else:
+                    result['type'] = "error"
+                    im.save(f'{err_dir}/type/{name}')
+            elif dic["id"] == 'datetime':         
+                strip_datetime = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
+                text = pytesseract.image_to_string(strip_datetime, config="--psm 7").split()
+                datetime = []
+                for t in text:
+                    if t[0] >= '0' and t[0] <='9':
+                        datetime.append(t)
+                try:
+                    if len(datetime) != 2 or len(datetime[0]) != 10 or len(datetime[1]) != 8 \
+                    or int(datetime[0][3:5]) > 12 or int(datetime[0][:2]) > 31 \
+                    or not int(datetime[0][3:5]) or not int(datetime[0][:2]):
+                        result['datetime'] = "error"
+                        im.save(f'{err_dir}/datetime/{name}')
+                    else:
+                        date, time = datetime[0], datetime[1]
+                        date = f'{date[6:]}-{date[3:5]}-{date[:2]}'
+                        result['datetime'] = f'{date} {time}'
+                except:
+                    result['datetime'] = "error"
+                    im.save(f'{err_dir}/datetime/{name}')
+            elif dic["id"] == 'temp':
+                strip_temperature = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
+                temperature = pytesseract.image_to_string(strip_temperature, config="--psm 7")
+                for i in range(len(temperature)):
+                    if temperature[i] != '-' and (temperature[i] > '9' or temperature[i] < '0'):
+                        temperature = temperature[:i]
+                        break
+                try:
+                    result['temp'] = int(temperature)
+                    if result['temp'] > 50 or result['temp'] < -90:
+                        result['temp'] = "error"
+                        im.save(f'{err_dir}/temp/{name}')
+                except:
                     result['temp'] = "error"
                     im.save(f'{err_dir}/temp/{name}')
-            except:
-                result['temp'] = "error"
-                im.save(f'{err_dir}/temp/{name}')
-    # проверить, насколько часто температура правильная (текст), улучшить обрезку
-    return result
-    """
+        return result
     except:
         img_path = coordinates["img_path"]
         path = cwd + img_path
         name = img_path.split('/')[1]
         im.save(f'{err_dir}/coordinates/{name}')
         return {'type': "error", 'datetime': "error", 'temp': "error"}
-    """
 
 def calculate_ruler_height(coordinates):
     mapping = coordinates["mapping"]
@@ -110,9 +112,6 @@ def calculate_ruler_height(coordinates):
         im = Image.open(path)
         im.save(f'{err_dir}/snow_level/{name}')
         return -999
-    #im = Image.open(path)
-    #ruler = im.crop((coordinates["topLeft"][0], coordinates["topLeft"][1], \ 
-    #        coordinates["rightBottom"][0], coordinates["rightBottom"][1]))
     model = YOLO('best.pt')
     results = model.predict(path, conf=0.25)
     if len(results) == 0:
@@ -193,7 +192,7 @@ def delete_files():
 def process_dataset(coordinates):
     result = recognize_text(coordinates)
     for value in result.values():
-        if value == "error":
+        if value == "error" or value == "M":
             return 'error'
     result['ruler'] = calculate_ruler_height(coordinates) 
     insert_data_point(-1, result)

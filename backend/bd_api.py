@@ -24,7 +24,6 @@ def insert_data_point(batch_id, data):
     conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
     cur = conn.cursor()
     sql = "INSERT INTO data_points(batch_id, data) VALUES (%s, %s)"
-    #batches = [(batch_id, json.dumps(el)) for el in json.loads(data)]
     if batch_id < 0:
         cur.execute("SELECT MAX(batch_id) FROM batches")
         batch_id = cur.fetchone()[0]
@@ -120,6 +119,8 @@ def get_batch_tree():
         cur.execute(sql, (site[0],))
         batches = cur.fetchall()
         for batch in batches:
+            if batch[-2] == 'rejected':
+                continue
             start_date, end_date = str(batch[2]), str(batch[3])
             name = f'{start_date[8:]}.{start_date[5:7]}.{start_date[:4]}-{end_date[8:]}.{end_date[5:7]}.{end_date[:4]}'
             sites_dic[-1]["batches"].append({"batch_id": batch[0], "name": name})

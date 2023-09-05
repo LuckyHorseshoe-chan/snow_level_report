@@ -24,7 +24,6 @@ function CreateReport(){
 
     const [checkedSites, setCheckedSites] = useState<number[]>([])
     const [checkedBatches, setCheckedBatches] = useState<number[]>([])
-    const [reportData, setReportData] = useState<any>([])
 
     const checkBatch = (batchId: number) => (e: any) => {
         e.target.checked ? 

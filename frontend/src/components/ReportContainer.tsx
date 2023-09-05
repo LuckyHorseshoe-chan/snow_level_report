@@ -232,7 +232,7 @@ function ReportContainer({ids}: {ids: number[]}){
                                                             <Th>{row.name}</Th>
                                                             <Th>{row.datetime}</Th>
                                                             <Th isNumeric>{row.ruler.toPrecision(prec)}</Th>
-                                                            <Th isNumeric>{row.temp.toPrecision(prec)}</Th>
+                                                            <Th isNumeric>{row.temp ? row.temp.toPrecision(prec) : null}</Th>
                                                         </Tr>
                                                     ))}
                                                 </Tbody>:
@@ -243,7 +243,7 @@ function ReportContainer({ids}: {ids: number[]}){
                                                             <Th isNumeric>{row.datetime.slice(5, 7)}</Th>
                                                             <Th isNumeric>{row.datetime.slice(0, 4)}</Th>
                                                             <Th isNumeric>{row.ruler.toPrecision(prec)}</Th>
-                                                            <Th isNumeric>{row.temp.toPrecision(prec)}</Th>
+                                                            <Th isNumeric>{row.temp ? row.temp.toPrecision(prec) : null}</Th>
                                                             <Th isNumeric>{row.maxSnow.toPrecision(prec)}</Th>
                                                             <Th>{row.maxSnowDate}</Th>
                                                             <Th isNumeric>{row.minSnow.toPrecision(prec)}</Th>

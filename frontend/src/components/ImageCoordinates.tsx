@@ -13,7 +13,6 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     const [temp, setTemp] = useState({topLeft: {x: 0, y: 0}, rightBottom: {x: 0, y: 0}})
     const [imgPath, setImgPath] = useState("")
     const [rulerHeight, setRulerHeight] = useState(0)
-    //const [batchId, setBatchId] = useState(0)
     const { siteId } = useParams()
 
     const [isType, setIsType] = useState(true)

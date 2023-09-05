@@ -8,7 +8,6 @@ import {
 import ReportContainer from "./ReportContainer";
 
 function Report({activeStep, setActiveStep} : {activeStep: any, setActiveStep: any}){
-    const [status, setStatus] = useState(false)
 
     useEffect(() => {
         const timer = setInterval(() => {
