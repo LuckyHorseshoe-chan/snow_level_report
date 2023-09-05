@@ -1,20 +1,30 @@
 import { VStack } from '@chakra-ui/react'
 import { useState, useEffect  } from 'react'
+import useSWR from "swr";
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { confirmAlert } from 'react-confirm-alert'
 import "react-confirm-alert/src/react-confirm-alert.css"
 import SiteText from "../components/SiteText";
 import Plus from "../components/Plus";
 
+
+
 function Site(){
     const [name, setName] = useState('')
     const [comment, setComment] = useState('')
-    const [batches, setBatches] = useState<string[]>([])
     const [checked, setChecked] = useState<string[]>([])
     const [confirmMessage, setConfirmMessage] = useState('Уверены, что хотите удалить этот объект?')
 
     const { siteId } = useParams()
+    const batchesEndpoint = "http://localhost:8000/batches?site_id=" + siteId
     const navigate = useNavigate()
+
+    const getBatches = async () => {
+        const response = await fetch(batchesEndpoint);
+        return await response.json();
+    };
+    
+    const { data: batches } = useSWR(batchesEndpoint, getBatches);
 
     const handleClick = (e: any) => {
         if (e.currentTarget.style.backgroundColor === "rgb(217, 217, 217)"){
@@ -80,15 +90,6 @@ function Site(){
             setName(site["name"])    
             setComment(site["comment"]) 
         })
-
-        fetch("http://localhost:8000/batches?site_id=" + siteId, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        }).then((response) => {
-            return response.json();
-        }).then((batches_list) => {
-            setBatches(batches_list)
-        })
     }, [])
 
     return(
@@ -110,7 +111,7 @@ function Site(){
                 <Link to={("/site/" + siteId + "/createBatch")}>
                     <Plus onClick={null}/>
                 </Link>
-                {batches.map((batch, i) => (
+                {batches?.map((batch: any, i: number) => (
                     <li key={i} className="item" id={batch[0]} onClick={handleClick}>
                         <SiteText 
                                 name={`${batch[2].slice(8, 10)}.${batch[2].slice(5, 7)}.${batch[2].slice(0, 4)}-${batch[3].slice(8, 10)}.${batch[3].slice(5, 7)}.${batch[3].slice(0, 4)}`} 

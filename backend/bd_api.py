@@ -180,10 +180,9 @@ def get_dp_by_batches_lst(batches):
     if batches[0] < 0:
         cur.execute("SELECT MAX(batch_id) FROM batches")
         batches = cur.fetchone()
-    sql = "SELECT * FROM \
-    (SELECT data_points.batch_id, data_points.data, sites.name FROM data_points \
-    JOIN batches ON batches.batch_id = data_points.batch_id \
-    JOIN sites ON sites.site_id = batches.site_id) AS x \
+    sql = "SELECT data_points.batch_id, data_points.data, sites.name FROM data_points \
+    JOIN batches USING (batch_id) \
+    JOIN sites USING (site_id) \
     WHERE batch_id IN (%s)" % ','.join([str(x) for x in batches])
     cur.execute(sql)
     all_data = cur.fetchall()
