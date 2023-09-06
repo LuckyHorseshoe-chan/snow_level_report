@@ -2,7 +2,7 @@ import psycopg2
 import json
 
 def insert_site(name, comment):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "INSERT INTO sites(name, comment) VALUES (%s, %s)"
     cur.execute(sql, (name, comment))
@@ -11,7 +11,7 @@ def insert_site(name, comment):
     conn.close()
 
 def insert_batch(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "INSERT INTO batches(site_id, start_date, end_date, createdAt, processedAt, mapping, status, comment) \
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
@@ -21,7 +21,7 @@ def insert_batch(site_id, start_date, end_date, createdAt, processedAt, mapping,
     conn.close()
 
 def insert_data_point(batch_id, data):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "INSERT INTO data_points(batch_id, data) VALUES (%s, %s)"
     if batch_id < 0:
@@ -33,7 +33,7 @@ def insert_data_point(batch_id, data):
     conn.close()
 
 def delete_site(site_id):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "DELETE FROM sites WHERE site_id = %s"
     cur.execute(sql, (site_id,))
@@ -42,7 +42,7 @@ def delete_site(site_id):
     conn.close()
 
 def delete_batches(batch_ids):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "DELETE FROM batches WHERE batch_id IN (%s)" % ", ".join(batch_ids)
     cur.execute(sql)
@@ -51,7 +51,7 @@ def delete_batches(batch_ids):
     conn.close()
 
 def get_site(site_id):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "SELECT * FROM sites WHERE site_id = %s"
     cur.execute(sql, (site_id,))
@@ -62,7 +62,7 @@ def get_site(site_id):
     return site
 
 def get_sites():
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "SELECT sites.site_id, sites.name, COUNT(batches.batch_id) AS batches_count, \
     MIN(batches.start_date) AS min_date, MAX(batches.end_date) AS max_date \
@@ -75,7 +75,7 @@ def get_sites():
     return sites
 
 def get_batch(batch_id):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "SELECT * FROM batches WHERE batch_id = %s"
     cur.execute(sql, (batch_id,))
@@ -86,7 +86,7 @@ def get_batch(batch_id):
     return batch
 
 def get_batches(site_id):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "SELECT * FROM batches WHERE site_id = %s"
     cur.execute(sql, (site_id,))
@@ -97,7 +97,7 @@ def get_batches(site_id):
     return batches
 
 def get_data_points(batch_id):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "SELECT * FROM data_points WHERE batch_id = %s"
     cur.execute(sql, (batch_id,))
@@ -108,7 +108,7 @@ def get_data_points(batch_id):
     return data_points
 
 def get_batch_tree():
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     cur.execute("SELECT * FROM sites")
     sites = cur.fetchall()
@@ -130,7 +130,7 @@ def get_batch_tree():
     return sites_dic
 
 def update_batch_status(status):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "UPDATE batches SET status = %s WHERE batch_id = (SELECT MAX(batch_id) FROM batches)"
     cur.execute(sql, (status,))
@@ -139,7 +139,7 @@ def update_batch_status(status):
     conn.close()
 
 def update_batch_dates(start_date, end_date, processed_at):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "UPDATE batches SET start_date = %s, end_date = %s, processedAt = %s WHERE batch_id = (SELECT MAX(batch_id) FROM batches)"
     cur.execute(sql, (start_date, end_date, processed_at))
@@ -148,7 +148,7 @@ def update_batch_dates(start_date, end_date, processed_at):
     conn.close()
 
 def update_batch_mapping(mapping):
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "UPDATE batches SET mapping = %s WHERE batch_id = (SELECT MAX(batch_id) FROM batches)"
     cur.execute(sql, (json.dumps(mapping),))
@@ -157,7 +157,7 @@ def update_batch_mapping(mapping):
     conn.close()
 
 def get_all_data():
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     sql = "SELECT * FROM sites"
     cur.execute(sql)
@@ -175,15 +175,14 @@ def get_all_data():
 
 def get_dp_by_batches_lst(batches):
     data_points = []
-    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='db', port="5432")
+    conn = psycopg2.connect(dbname='objects', user='lucky', password='12345', host='localhost', port="5432")
     cur = conn.cursor()
     if batches[0] < 0:
         cur.execute("SELECT MAX(batch_id) FROM batches")
         batches = cur.fetchone()
-    sql = "SELECT * FROM \
-    (SELECT data_points.batch_id, data_points.data, sites.name FROM data_points \
-    JOIN batches ON batches.batch_id = data_points.batch_id \
-    JOIN sites ON sites.site_id = batches.site_id) AS x \
+    sql = "SELECT data_points.batch_id, data_points.data, sites.name FROM data_points \
+    JOIN batches USING (batch_id) \
+    JOIN sites USING (site_id) \
     WHERE batch_id IN (%s)" % ','.join([str(x) for x in batches])
     cur.execute(sql)
     all_data = cur.fetchall()

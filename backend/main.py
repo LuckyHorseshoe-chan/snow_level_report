@@ -32,7 +32,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-cwd = os.environ['CWD']
+cwd = os.getcwd() + '/static/'
 
 @app.get("/")
 async def root():

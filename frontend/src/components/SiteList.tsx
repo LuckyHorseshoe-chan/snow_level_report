@@ -1,26 +1,21 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import useSWR from "swr";
 import Plus from "./Plus";
 import SiteText from "./SiteText"
 
+const sitesEndpoint = "http://localhost:8000/sites"
+const getSites = async () => {
+    const response = await fetch(sitesEndpoint);
+    return await response.json();
+};
+
 function SiteList({openModal}: {openModal: any}){
-    const [sites, setSites] = useState<any>([])
-    
-    useEffect(() => {
-        fetch("http://localhost:8000/sites", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        }).then((response) => {
-            return response.json();
-        }).then((sites_list) =>{
-            setSites(sites_list) 
-        })
-    }, [])
+    const { data: sites } = useSWR(sitesEndpoint, getSites);
 
     return (
         <ul className="object-list">
             <Plus onClick={openModal}/>
-            {sites.map((site: any, i: number) => (
+            {sites?.map((site: any, i: number) => (
                 <Link to={('/site/' + site[0])}>
                     <li key={i} className="item">
                         <SiteText name={site[1]} 
