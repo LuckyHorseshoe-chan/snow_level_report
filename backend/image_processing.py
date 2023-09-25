@@ -51,7 +51,6 @@ def recognize_text(coordinates):
                 int(float(dic["pos"][3]) * ori_img_height / img_height)
             ]
             strip = ImageOps.invert(im.crop((pos[0], pos[1], pos[2], pos[3]))).resize((k*(pos[2]-pos[0]), k*(pos[3]-pos[1])))
-            strip.save("strip.jpg")
             if dic["id"] == 'type':
                 img_type = pytesseract.image_to_string(strip, config="--psm 7")
                 if img_type.find("M") != -1:

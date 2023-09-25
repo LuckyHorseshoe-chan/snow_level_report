@@ -247,17 +247,6 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
         setRulerHeight(e.target.value)
     }
 
-    const ori_width = 4032
-    const ori_height = 3024
-
-    const calculateX = (x: number) => {
-        return x * ori_width / imgSize.width
-    }
-
-    const calculateY = (y: number) => {
-        return y * ori_height / imgSize.height
-    }
-
     const processDataset = (e: any) => {
         const mapping = setMapping()
         const coordinates = {
