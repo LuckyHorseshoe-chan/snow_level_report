@@ -12,6 +12,10 @@ import Plus from "../components/Plus";
 function Site(){
     const [name, setName] = useState('')
     const [comment, setComment] = useState('')
+<<<<<<< HEAD
+=======
+    //const [batches, setBatches] = useState<string[]>([])
+>>>>>>> eb818b7fbeb22090780880b2b8a57511df934b7b
     const [checked, setChecked] = useState<string[]>([])
     const [confirmMessage, setConfirmMessage] = useState('Уверены, что хотите удалить этот объект?')
 
