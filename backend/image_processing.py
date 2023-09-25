@@ -16,8 +16,8 @@ import shutil
 from ultralytics import YOLO
 from bd_api import *
 
-cwd = os.environ['CWD']
-celery_app = Celery('image_processing', broker='redis://redis:6379/0', backend='redis://redis:6379/0')
+cwd = os.getcwd() + '/static/'
+celery_app = Celery('image_processing', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
 err_dir = cwd + "errors"
 
 def unzip_file(path_to_zip_file, directory_to_extract_to):
