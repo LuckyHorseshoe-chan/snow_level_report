@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    image: luckyhorseshoe/snow_level_report_backend:1.0
     ports:
       - 8000:8000
     environment:
@@ -15,7 +15,7 @@ services:
     volumes:
       - app:/app
   server:
-    build: ./backend
+    image: luckyhorseshoe/snow_level_report_backend:1.0
     ports:
       - 8080:8080
     command: python3 -m http.server 8080
@@ -30,7 +30,7 @@ services:
     volumes:
       - ./Caddyfile:/Caddyfile
   worker:
-    build: ./backend
+    image: luckyhorseshoe/snow_level_report_backend:1.0
     environment:
       - CWD=/app/
     command: celery -A image_processing worker --loglevel=INFO
@@ -55,7 +55,7 @@ services:
     volumes: 
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
   frontend:
-    build: ./frontend
+    image: luckyhorseshoe/snow_level_report_frontend:1.0
     ports: 
       - 3000:3000
     depends_on:
