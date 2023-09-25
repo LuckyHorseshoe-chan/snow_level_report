@@ -130,13 +130,11 @@ tasks = []
 def run_worker(coordinates):
     task = process_dataset.delay(coordinates)
     tasks.append(task.id)
-    #subprocesses.append(subprocess.Popen(['C:\\Users\\Anna\\Desktop\\GitHub\\snow_level_report\\backend\\venv\\Scripts\\python', 'image_processing.py', json.dumps(coordinates)]))
 
 @app.post("/images")
 async def process_batch(coordinates: dict):
     keys = coordinates.keys()
-    if ("strip_size" not in keys or "mapping" not in keys \
-    or not coordinates["mapping"] or not coordinates["strip_size"]):
+    if ("mapping" not in keys or not coordinates["mapping"]):
         return {"status": "fail"}
     update_batch_mapping(coordinates["mapping"])
     for d in os.listdir(cwd):
@@ -147,8 +145,6 @@ async def process_batch(coordinates: dict):
     for i in range(len(files)):
         coordinates["img_path"] = f'{folder}/{files[i]}'
         run_worker(coordinates)
-    #coordinates["img_path"] = f'{folder}/{files[0]}'
-    #run_worker(coordinates)
     return {"status": "ok"}
 
 @app.get("/tasks_status")

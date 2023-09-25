@@ -38,16 +38,21 @@ def recognize_text(coordinates):
         img_path = coordinates["img_path"]
         path = cwd + img_path
         name = img_path.split('/')[1]
-        strip_size = int(coordinates["strip_size"])
+        img_width, img_height = float(coordinates["imgWidth"]), float(coordinates["imgHeight"])
         mapping = coordinates["mapping"]
         im = Image.open(path)
+        ori_img_width, ori_img_height = float(im.size[0]), float(im.size[1])
         k = 2
-        strip = ImageOps.invert(im.crop((0, im.size[1]-strip_size, im.size[0], im.size[1]))).resize((k*im.size[0], k*strip_size))
         for dic in mapping:
-            pos = [float(x) for x in dic["pos"]]
+            pos = [
+                int(float(dic["pos"][0]) * ori_img_width / img_width),
+                int(float(dic["pos"][1]) * ori_img_height / img_height),
+                int(float(dic["pos"][2]) * ori_img_width / img_width),
+                int(float(dic["pos"][3]) * ori_img_height / img_height)
+            ]
+            strip = ImageOps.invert(im.crop((pos[0], pos[1], pos[2], pos[3]))).resize((k*(pos[2]-pos[0]), k*(pos[3]-pos[1])))
             if dic["id"] == 'type':
-                strip_type = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
-                img_type = pytesseract.image_to_string(strip_type, config="--psm 7")
+                img_type = pytesseract.image_to_string(strip, config="--psm 7")
                 if img_type.find("M") != -1:
                     result['type'] = "M"
                 elif img_type.find("T") != -1:
@@ -56,8 +61,7 @@ def recognize_text(coordinates):
                     result['type'] = "error"
                     im.save(f'{err_dir}/type/{name}')
             elif dic["id"] == 'datetime':         
-                strip_datetime = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
-                text = pytesseract.image_to_string(strip_datetime, config="--psm 7").split()
+                text = pytesseract.image_to_string(strip, config="--psm 7").split()
                 datetime = []
                 for t in text:
                     if t[0] >= '0' and t[0] <='9':
@@ -76,8 +80,7 @@ def recognize_text(coordinates):
                     result['datetime'] = "error"
                     im.save(f'{err_dir}/datetime/{name}')
             elif dic["id"] == 'temp':
-                strip_temperature = strip.crop((k*pos[0], 0, k*pos[2], k*strip_size))
-                temperature = pytesseract.image_to_string(strip_temperature, config="--psm 7")
+                temperature = pytesseract.image_to_string(strip, config="--psm 7")
                 for i in range(len(temperature)):
                     if temperature[i] != '-' and (temperature[i] > '9' or temperature[i] < '0'):
                         temperature = temperature[:i]
@@ -102,12 +105,20 @@ def calculate_ruler_height(coordinates):
     mapping = coordinates["mapping"]
     img_path = coordinates["img_path"]
     name = img_path.split('/')[1]
+    img_width, img_height = float(coordinates["imgWidth"]), float(coordinates["imgHeight"])
+    path = cwd + img_path
+    im = Image.open(path)
+    ori_img_width, ori_img_height = im.size[0], im.size[1]
     for dic in mapping:
         if dic["id"] == 'ruler':
-            pos = [float(x) for x in dic["pos"]]
+            pos = [
+                int(float(dic["pos"][0]) * ori_img_width / img_width),
+                int(float(dic["pos"][1]) * ori_img_height / img_height),
+                int(float(dic["pos"][2]) * ori_img_width / img_width),
+                int(float(dic["pos"][3]) * ori_img_height / img_height)
+            ]
             ruler_height = dic["heightCm"]
     pix_ruler_height = pos[3] - pos[1]
-    path = cwd + img_path
     if not pix_ruler_height:
         im = Image.open(path)
         im.save(f'{err_dir}/snow_level/{name}')
