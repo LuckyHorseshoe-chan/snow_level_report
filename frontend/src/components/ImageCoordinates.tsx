@@ -186,21 +186,21 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     const setMapping = () => {
         const mapping = [
             {"id": "ruler", "type": "centimeters", "heightCm": rulerHeight,
-            "pos": [calculateX(ruler.topLeft.x).toPrecision(prec), calculateY(ruler.topLeft.y).toPrecision(prec), 
-                calculateX(ruler.rightBottom.x).toPrecision(prec), calculateY(ruler.rightBottom.y).toPrecision(prec)]},
+            "pos": [ruler.topLeft.x.toPrecision(prec), ruler.topLeft.y.toPrecision(prec), 
+                ruler.rightBottom.x.toPrecision(prec), ruler.rightBottom.y.toPrecision(prec)]},
             {"id": "datetime", "type": "timestamp", 
-            "pos": [calculateX(date.topLeft.x).toPrecision(prec), calculateY(date.topLeft.y).toPrecision(prec), 
-                calculateX(date.rightBottom.x).toPrecision(prec), calculateY(date.rightBottom.y).toPrecision(prec)]},
+            "pos": [date.topLeft.x.toPrecision(prec), date.topLeft.y.toPrecision(prec), 
+                date.rightBottom.x.toPrecision(prec), date.rightBottom.y.toPrecision(prec)]},
         ]
         if (isTemp){
             mapping.push({"id": "temp", "type": "celsius", 
-            "pos": [calculateX(temp.topLeft.x).toPrecision(prec), calculateY(temp.topLeft.y).toPrecision(prec), 
-                calculateX(temp.rightBottom.x).toPrecision(prec), calculateY(temp.rightBottom.y).toPrecision(prec)]})
+            "pos": [temp.topLeft.x.toPrecision(prec), temp.topLeft.y.toPrecision(prec), 
+                temp.rightBottom.x.toPrecision(prec), temp.rightBottom.y.toPrecision(prec)]})
         }
         if (isType){
             mapping.push({"id": "type", "type": "str", 
-            "pos": [calculateX(type.topLeft.x).toPrecision(prec), calculateY(type.topLeft.y).toPrecision(prec), 
-                calculateX(type.rightBottom.x).toPrecision(prec), calculateY(type.rightBottom.y).toPrecision(prec)]})
+            "pos": [type.topLeft.x.toPrecision(prec), type.topLeft.y.toPrecision(prec), 
+                type.rightBottom.x.toPrecision(prec), type.rightBottom.y.toPrecision(prec)]})
         }
         return mapping
     }
@@ -208,8 +208,9 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     const recognizeData = () => {
         const textCoordinates = {
             "img_path": imgPath,
-            "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
-            "mapping": setMapping()
+            "mapping": setMapping(),
+            "imgWidth":  imgSize.width,
+            "imgHeight": imgSize.height
         }
         console.log(textCoordinates)
         console.log(textCoordinates)
@@ -225,7 +226,9 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
 
         const rulerCoordinates = {
             "img_path": imgPath,
-            "mapping": setMapping()
+            "mapping": setMapping(),
+            "imgWidth":  imgSize.width,
+            "imgHeight": imgSize.height
         }
         console.log(rulerCoordinates)
         console.log(JSON.stringify(rulerCoordinates))
@@ -258,8 +261,9 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
     const processDataset = (e: any) => {
         const mapping = setMapping()
         const coordinates = {
-            "strip_size": ori_height - calculateY(Math.max(type.topLeft.y, date.topLeft.y, temp.topLeft.y)),
-            "mapping": mapping
+            "mapping": mapping,
+            "imgWidth":  imgSize.width,
+            "imgHeight": imgSize.height
         }
         console.log(coordinates)
         fetch("http://localhost:8000/images", {
@@ -286,10 +290,10 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                 <div className="rect-info" id="rect-gauge">
                     <p className='img-text'>Рейка</p>
                     <p className='img-text'>
-                        Верхний левый угол: ({calculateX(ruler.topLeft.x).toPrecision(prec)}, {calculateY(ruler.topLeft.y).toPrecision(prec)})
+                        Верхний левый угол: ({ruler.topLeft.x.toPrecision(prec)}, {ruler.topLeft.y.toPrecision(prec)})
                     </p>
                     <p className='img-text'>
-                        Нижний правый угол: ({calculateX(ruler.rightBottom.x).toPrecision(prec)}, {calculateY(ruler.rightBottom.y).toPrecision(prec)})
+                        Нижний правый угол: ({ruler.rightBottom.x.toPrecision(prec)}, {ruler.rightBottom.y.toPrecision(prec)})
                     </p>
                     <HStack>
                         <p className='img-text'>Высота рейки (см):</p>
@@ -302,10 +306,10 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                     {isType ? 
                     <div>
                         <p className='img-text'>
-                            Верхний левый угол: ({calculateX(type.topLeft.x).toPrecision(prec)}, {calculateY(type.topLeft.y).toPrecision(prec)})
+                            Верхний левый угол: ({type.topLeft.x.toPrecision(prec)}, {type.topLeft.y.toPrecision(prec)})
                         </p>
                         <p className='img-text'>
-                            Нижний правый угол: ({calculateX(type.rightBottom.x).toPrecision(prec)}, {calculateY(type.rightBottom.y).toPrecision(prec)})
+                            Нижний правый угол: ({type.rightBottom.x.toPrecision(prec)}, {type.rightBottom.y.toPrecision(prec)})
                         </p>
                         <p className='img-text'>Распознанное значение: {info.type}</p>
                     </div> :
@@ -321,10 +325,10 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                 <div className="rect-info" id="rect-date">
                     <p className='img-text'>Дата и время</p>
                     <p className='img-text'>
-                        Верхний левый угол: ({calculateX(date.topLeft.x).toPrecision(prec)}, {calculateY(date.topLeft.y).toPrecision(prec)})
+                        Верхний левый угол: ({date.topLeft.x.toPrecision(prec)}, {date.topLeft.y.toPrecision(prec)})
                     </p>
                     <p className='img-text'>
-                        Нижний правый угол: ({calculateX(date.rightBottom.x).toPrecision(prec)}, {calculateY(date.rightBottom.y).toPrecision(prec)})
+                        Нижний правый угол: ({date.rightBottom.x.toPrecision(prec)}, {date.rightBottom.y.toPrecision(prec)})
                     </p>
                     <p className='img-text'>Распознанное значение: {info.datetime}</p>
                 </div>
@@ -333,10 +337,10 @@ function ImageCoordinates({setActiveStep} : {setActiveStep: any}){
                     {isTemp ? 
                     <div>
                         <p className='img-text'>
-                            Верхний левый угол: ({calculateX(temp.topLeft.x).toPrecision(prec)}, {calculateY(temp.topLeft.y).toPrecision(prec)})
+                            Верхний левый угол: ({temp.topLeft.x.toPrecision(prec)}, {temp.topLeft.y.toPrecision(prec)})
                         </p>
                         <p className='img-text'>
-                            Нижний правый угол: ({calculateX(temp.rightBottom.x).toPrecision(prec)}, {(temp.rightBottom.y).toPrecision(prec)})
+                            Нижний правый угол: ({temp.rightBottom.x.toPrecision(prec)}, {(temp.rightBottom.y).toPrecision(prec)})
                         </p>
                         <p className='img-text'>Распознанное значение: {info.temp}</p>
                     </div> :
